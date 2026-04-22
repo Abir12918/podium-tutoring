@@ -1,9 +1,4 @@
-// Firebase SDKs import
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
-
-// Your Firebase config object
+// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAymD4-mWInCxwXTM2T508CXLK9yz8z59s",
   authDomain: "podium-tutoring.firebaseapp.com",
@@ -15,9 +10,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app = firebase.initializeApp(firebaseConfig); // Use global firebase object
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 // DOM elements
 const authContainer = document.getElementById('auth-container');
@@ -28,8 +23,8 @@ const attendanceList = document.getElementById('attendance-list');
 
 // Firebase Authentication - Google sign-in
 loginButton.addEventListener("click", () => {
-  const provider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider)
+  const provider = new firebase.auth.GoogleAuthProvider(); // Use global firebase object
+  firebase.auth().signInWithPopup(provider)
     .then((result) => {
       const user = result.user;
       console.log("User signed in:", user.displayName);
@@ -41,7 +36,7 @@ loginButton.addEventListener("click", () => {
 
 // Firebase Authentication - Logout
 logoutButton.addEventListener("click", () => {
-  signOut(auth).then(() => {
+  firebase.auth().signOut().then(() => {
     console.log("User signed out");
   }).catch((error) => {
     console.log("Error signing out:", error);
@@ -49,7 +44,7 @@ logoutButton.addEventListener("click", () => {
 });
 
 // Check auth state and toggle UI
-onAuthStateChanged(auth, (user) => {
+firebase.auth().onAuthStateChanged((user) => {
   if (user) {
     authContainer.style.display = 'none';
     attendanceContainer.style.display = 'block';
@@ -62,7 +57,7 @@ onAuthStateChanged(auth, (user) => {
 
 // Load attendance data from Firestore
 async function loadAttendanceData() {
-  const querySnapshot = await getDocs(collection(db, "attendance"));
+  const querySnapshot = await firebase.firestore().collection("attendance").get();
   attendanceList.innerHTML = ''; // Clear previous list
   querySnapshot.forEach((doc) => {
     const data = doc.data();
@@ -75,7 +70,7 @@ async function loadAttendanceData() {
 // Add attendance record to Firestore
 async function addAttendance(studentName, attendanceStatus) {
   try {
-    const docRef = await addDoc(collection(db, "attendance"), {
+    const docRef = await firebase.firestore().collection("attendance").add({
       studentName: studentName,
       attendanceStatus: attendanceStatus,
       date: new Date().toISOString()
