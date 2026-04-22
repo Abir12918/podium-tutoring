@@ -1,0 +1,22 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore package-lock.json (if you prefer not to track it, but usually it's tracked)
+package-lock.json
+
+# Ignore environment files (e.g., for Firebase API keys)
+.env
+
+# Ignore system files
+.DS_Store
+
+# Ignore log files
+*.log
+
+# Ignore the build or dist folder (for production-ready code)
+dist/
+build/
+
+# Ignore IDE files (e.g., VSCode settings)
+.vscode/
+.idea/
