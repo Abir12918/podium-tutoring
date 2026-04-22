@@ -1,10 +1,10 @@
 # Ignore node_modules directory
 node_modules/
 
-# Ignore package-lock.json (if you prefer not to track it, but usually it's tracked)
+# Ignore package-lock.json
 package-lock.json
 
-# Ignore environment files (e.g., for Firebase API keys)
+# Ignore environment files (e.g., Firebase credentials, API keys)
 .env
 
 # Ignore system files
@@ -20,3 +20,55 @@ build/
 # Ignore IDE files (e.g., VSCode settings)
 .vscode/
 .idea/
+
+# Ignore specific Firebase-related skills or directories
+.adal/
+.augment/
+.bob/
+.claude/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.vibe/
+.windsurf/
+.zencoder/
+
+# Ignore all .agents directories and subdirectories
+.agents/
+skills/firebase-firestore-enterprise-native-mode
+skills/firestore-security-rules-auditor
+.gitignore
+skills/developing-genkit-dart
+skills/developing-genkit-go
+skills/developing-genkit-js
+skills/firebase-ai-logic
+skills/firebase-app-hosting-basics
+skills/firebase-auth-basics
+skills/firebase-basics
+skills/firebase-data-connect
+skills/firebase-firestore-standard
+skills/firebase-hosting-basics
+skills-lock.json
+
+# Ignore Firebase temporary or configuration files
+firebase-hosting*
+.firebase*
