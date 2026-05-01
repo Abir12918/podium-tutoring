@@ -1,8 +1,6 @@
 # Ignore node_modules directory
 node_modules/
 
-# Ignore package-lock.json
-package-lock.json
 
 # Ignore environment files (e.g., Firebase credentials, API keys)
 .env
@@ -56,7 +54,7 @@ build/
 .agents/
 skills/firebase-firestore-enterprise-native-mode
 skills/firestore-security-rules-auditor
-.gitignore
+
 skills/developing-genkit-dart
 skills/developing-genkit-go
 skills/developing-genkit-js
