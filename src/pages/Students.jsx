@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getStudents } from '../services/studentService';
-import { Users, Filter, Mail, Phone, RefreshCw } from 'lucide-react';
+import { Users, Filter, Mail, Phone, RefreshCw, Search, X } from 'lucide-react';
 
 const Students = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('active'); // 'all', 'active', 'inactive', 'center', 'one-on-one'
+  const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
 
   const fetchStudents = async () => {
@@ -33,63 +34,103 @@ const Students = () => {
   }, []);
 
   const filteredStudents = students.filter(student => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return student.status === 'active' || !student.status;
-    if (filter === 'inactive') return student.status === 'inactive';
-    // For type filters, usually we only want active students of that type, but to be robust:
-    if (filter === 'center') return student.studentType === 'center' && student.status !== 'inactive';
-    if (filter === 'one-on-one') return student.studentType === 'one-on-one' && student.status !== 'inactive';
-    return true;
+    // Apply status/type filter first
+    let passesFilter = true;
+    if (filter === 'active') passesFilter = student.status === 'active' || !student.status;
+    else if (filter === 'inactive') passesFilter = student.status === 'inactive';
+    else if (filter === 'center') passesFilter = student.studentType === 'center' && student.status !== 'inactive';
+    else if (filter === 'one-on-one') passesFilter = student.studentType === 'one-on-one' && student.status !== 'inactive';
+    // 'all' passes everything
+
+    if (!passesFilter) return false;
+
+    // Apply search query
+    if (!searchQuery.trim()) return true;
+
+    const q = searchQuery.toLowerCase().trim();
+    const fullName = `${student.firstName || ''} ${student.lastName || ''}`.toLowerCase();
+    const school = (student.school || '').toLowerCase();
+    const parentEmails = (student.parentEmails || []).join(' ').toLowerCase();
+    const parentPhones = (student.parentPhones || []).join(' ').toLowerCase();
+
+    return (
+      fullName.includes(q) ||
+      school.includes(q) ||
+      parentEmails.includes(q) ||
+      parentPhones.includes(q)
+    );
   });
 
   return (
     <div className="space-y-6 pb-12">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Students Directory</h1>
-          <p className="text-slate-500 mt-2">Manage all enrolled students.</p>
+      <header className="space-y-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Students Directory</h1>
+            <p className="text-slate-500 mt-2">Manage all enrolled students.</p>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm w-fit shrink-0">
+            <button 
+              onClick={() => setFilter('active')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'active' ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              Active
+            </button>
+            <button 
+              onClick={() => setFilter('center')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'center' ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              Center
+            </button>
+            <button 
+              onClick={() => setFilter('one-on-one')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'one-on-one' ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              One-on-One
+            </button>
+            <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
+            <button 
+              onClick={() => setFilter('inactive')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'inactive' ? 'bg-slate-200 text-slate-800 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              Inactive
+            </button>
+            <button 
+              onClick={() => setFilter('all')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'all' ? 'bg-slate-200 text-slate-800 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              All
+            </button>
+            <div className="w-px h-6 bg-slate-200 mx-1"></div>
+            <button 
+              onClick={fetchStudents}
+              className="p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-lg"
+              title="Refresh Roster"
+            >
+              <RefreshCw size={18} className={loading ? "animate-spin text-blue-500" : ""} />
+            </button>
+          </div>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm w-fit shrink-0">
-          <button 
-            onClick={() => setFilter('active')}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'active' ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
-          >
-            Active
-          </button>
-          <button 
-            onClick={() => setFilter('center')}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'center' ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
-          >
-            Center
-          </button>
-          <button 
-            onClick={() => setFilter('one-on-one')}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'one-on-one' ? 'bg-brand-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
-          >
-            One-on-One
-          </button>
-          <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
-          <button 
-            onClick={() => setFilter('inactive')}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'inactive' ? 'bg-slate-200 text-slate-800 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
-          >
-            Inactive
-          </button>
-          <button 
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === 'all' ? 'bg-slate-200 text-slate-800 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
-          >
-            All
-          </button>
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
-          <button 
-            onClick={fetchStudents}
-            className="p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-lg"
-            title="Refresh Roster"
-          >
-            <RefreshCw size={18} className={loading ? "animate-spin text-blue-500" : ""} />
-          </button>
+
+        {/* Search Bar */}
+        <div className="relative max-w-md">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name, school, email, or phone..."
+            className="w-full pl-11 pr-10 py-2.5 rounded-xl border border-slate-200 bg-white focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all text-sm shadow-sm"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
       </header>
       
@@ -107,11 +148,18 @@ const Students = () => {
       ) : filteredStudents.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
           <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-            <Users className="w-8 h-8 text-slate-400" />
+            {searchQuery ? <Search className="w-8 h-8 text-slate-400" /> : <Users className="w-8 h-8 text-slate-400" />}
           </div>
-          <h2 className="text-xl font-semibold text-slate-700">No students yet.</h2>
+          <h2 className="text-xl font-semibold text-slate-700">
+            {searchQuery ? 'No matching students found.' : 'No students yet.'}
+          </h2>
           <p className="text-slate-500 mt-2 max-w-md">
-            {filter !== 'all' ? `You don't have any ${filter} students at the moment.` : "Get started by adding a new student to your roster."}
+            {searchQuery
+              ? 'Try adjusting your search or changing the filter.'
+              : filter !== 'all'
+                ? `You don't have any ${filter} students at the moment.`
+                : "Get started by adding a new student to your roster."
+            }
           </p>
         </div>
       ) : (

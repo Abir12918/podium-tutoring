@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, doc, getDoc, updateDoc, query, where, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 
 const STUDENTS_COLLECTION = 'students';
@@ -51,13 +51,18 @@ export const addStudent = async (studentData) => {
 
 /**
  * Retrieves all students from the Firestore database.
+ * Excludes permanently hidden student IDs.
  */
+const EXCLUDED_STUDENT_IDS = ['RMxCyOwVvNLZaKWROQcp', 'em3Wmb1Q92R7o5KN2jcc'];
+
 export const getStudents = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, STUDENTS_COLLECTION));
     const students = [];
     querySnapshot.forEach((doc) => {
-      students.push({ id: doc.id, ...doc.data() });
+      if (!EXCLUDED_STUDENT_IDS.includes(doc.id)) {
+        students.push({ id: doc.id, ...doc.data() });
+      }
     });
     console.log(`Fetched ${students.length} students from ${STUDENTS_COLLECTION}`);
     return students;
@@ -80,7 +85,9 @@ export const getCenterStudents = async () => {
     const querySnapshot = await getDocs(q);
     const students = [];
     querySnapshot.forEach((doc) => {
-      students.push({ id: doc.id, ...doc.data() });
+      if (!EXCLUDED_STUDENT_IDS.includes(doc.id)) {
+        students.push({ id: doc.id, ...doc.data() });
+      }
     });
     console.log(`Fetched ${students.length} active center students.`);
     return students;
@@ -128,6 +135,21 @@ export const updateStudent = async (studentId, updateData) => {
     return true;
   } catch (error) {
     console.error("Error updating student:", error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a student from Firestore.
+ * @param {string} studentId
+ */
+export const deleteStudent = async (studentId) => {
+  try {
+    const docRef = doc(db, STUDENTS_COLLECTION, studentId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (error) {
+    console.error("Error deleting student:", error);
     throw error;
   }
 };

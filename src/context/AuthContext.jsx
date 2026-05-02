@@ -6,7 +6,8 @@ const AuthContext = createContext({});
 
 const allowedEmails = [
   "banikabir1234@gmail.com",
-  "rahatkhandokar5@gmail.com"
+  "rahatkhandokar5@gmail.com",
+  "rahatkhandokar6@gmail.com"
 ];
 
 export const AuthProvider = ({ children }) => {
@@ -39,7 +40,7 @@ export const AuthProvider = ({ children }) => {
   const clearError = () => setError('');
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, error, clearError }}>
+    <AuthContext.Provider value={{ currentUser, loading, error, clearError, logout: logoutUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );

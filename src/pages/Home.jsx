@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getTuitionRecordsForMonth } from '../services/tuitionService';
-import { DollarSign, Users, ArrowRight, Loader2, CreditCard, Clock } from 'lucide-react';
+import { getStudents } from '../services/studentService';
+import { DollarSign, Users, ArrowRight, Loader2, CreditCard, Clock, UserPlus, CalendarCheck, GraduationCap, UserX } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
   const { currentUser } = useAuth();
   const [records, setRecords] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const currentDate = new Date();
@@ -16,8 +18,12 @@ const Home = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await getTuitionRecordsForMonth(monthKey);
-        setRecords(data);
+        const [tuitionData, studentData] = await Promise.all([
+          getTuitionRecordsForMonth(monthKey),
+          getStudents()
+        ]);
+        setRecords(tuitionData);
+        setStudents(studentData);
       } catch (err) {
         console.error("Failed to load summary data", err);
       } finally {
@@ -35,6 +41,12 @@ const Home = () => {
   const paidStudentsCount = records.filter(r => r.paymentStatus === 'paid').length;
   const unpaidPartialCount = records.filter(r => r.paymentStatus === 'unpaid' || r.paymentStatus === 'partial').length;
 
+  // Student counts
+  const activeStudents = students.filter(s => s.status === 'active' || !s.status);
+  const centerCount = activeStudents.filter(s => s.studentType === 'center').length;
+  const oneOnOneCount = activeStudents.filter(s => s.studentType === 'one-on-one').length;
+  const inactiveCount = students.filter(s => s.status === 'inactive').length;
+
   return (
     <div className="space-y-8 pb-12">
       <header>
@@ -49,7 +61,87 @@ const Home = () => {
           <Loader2 size={32} className="animate-spin text-brand-blue" />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
+          {/* Student Stats */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-slate-800">Student Overview</h2>
+              <Link to="/students" className="text-sm font-medium text-brand-blue hover:text-blue-700 flex items-center gap-1 group">
+                View All <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 bg-brand-green/10 text-brand-green rounded-lg flex items-center justify-center">
+                    <Users size={18} />
+                  </div>
+                  <span className="text-sm font-medium text-slate-500">Active</span>
+                </div>
+                <p className="text-2xl font-bold text-slate-800">{activeStudents.length}</p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
+                    <GraduationCap size={18} />
+                  </div>
+                  <span className="text-sm font-medium text-slate-500">Center</span>
+                </div>
+                <p className="text-2xl font-bold text-slate-800">{centerCount}</p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center">
+                    <Users size={18} />
+                  </div>
+                  <span className="text-sm font-medium text-slate-500">One-on-One</span>
+                </div>
+                <p className="text-2xl font-bold text-slate-800">{oneOnOneCount}</p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center">
+                    <UserX size={18} />
+                  </div>
+                  <span className="text-sm font-medium text-slate-500">Inactive</span>
+                </div>
+                <p className="text-2xl font-bold text-slate-800">{inactiveCount}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div>
+            <h2 className="text-xl font-bold text-slate-800 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Link to="/add-student" className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all group text-center">
+                <div className="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                  <UserPlus size={20} />
+                </div>
+                <p className="text-sm font-semibold text-slate-700 group-hover:text-brand-blue transition-colors">Add Student</p>
+              </Link>
+              <Link to="/attendance" className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all group text-center">
+                <div className="w-10 h-10 bg-brand-green/10 text-brand-green rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-brand-green group-hover:text-white transition-colors">
+                  <CalendarCheck size={20} />
+                </div>
+                <p className="text-sm font-semibold text-slate-700 group-hover:text-brand-green transition-colors">Mark Attendance</p>
+              </Link>
+              <Link to="/tuition" className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all group text-center">
+                <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                  <CreditCard size={20} />
+                </div>
+                <p className="text-sm font-semibold text-slate-700 group-hover:text-orange-600 transition-colors">Manage Tuition</p>
+              </Link>
+              <Link to="/students" className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all group text-center">
+                <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                  <Users size={20} />
+                </div>
+                <p className="text-sm font-semibold text-slate-700 group-hover:text-purple-600 transition-colors">View Students</p>
+              </Link>
+            </div>
+          </div>
+
+          {/* Financial Summary */}
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-slate-800">Financial Summary</h2>
             <Link to="/tuition" className="text-sm font-medium text-brand-blue hover:text-blue-700 flex items-center gap-1 group">

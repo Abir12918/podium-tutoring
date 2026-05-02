@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { addStudent } from '../services/studentService';
-import { Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 const initialFormState = {
   firstName: '',
@@ -26,7 +26,7 @@ const ArrayInput = ({ label, field, type = "text", placeholder, formData, handle
           type={type}
           value={item}
           onChange={(e) => handleArrayChange(index, field, e.target.value)}
-          className="flex-1 rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none transition-shadow"
+          className="flex-1 rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all"
           placeholder={placeholder}
         />
         {formData[field].length > 1 && (
@@ -43,7 +43,7 @@ const ArrayInput = ({ label, field, type = "text", placeholder, formData, handle
     <button
       type="button"
       onClick={() => addArrayItem(field)}
-      className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+      className="text-sm text-brand-blue hover:text-blue-700 font-medium flex items-center gap-1"
     >
       <Plus size={16} /> Add Another
     </button>
@@ -132,19 +132,19 @@ const AddStudent = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">First Name *</label>
-              <input required name="firstName" value={formData.firstName} onChange={handleChange} type="text" className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none" />
+              <input required name="firstName" value={formData.firstName} onChange={handleChange} type="text" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">Last Name *</label>
-              <input required name="lastName" value={formData.lastName} onChange={handleChange} type="text" className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none" />
+              <input required name="lastName" value={formData.lastName} onChange={handleChange} type="text" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">School</label>
-              <input name="school" value={formData.school} onChange={handleChange} type="text" className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none" />
+              <input name="school" value={formData.school} onChange={handleChange} type="text" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">Grade</label>
-              <input name="grade" value={formData.grade} onChange={handleChange} type="text" className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none" />
+              <input name="grade" value={formData.grade} onChange={handleChange} type="text" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" />
             </div>
           </div>
         </div>
@@ -192,22 +192,22 @@ const AddStudent = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">Student Type</label>
-              <select name="studentType" value={formData.studentType} onChange={handleChange} className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none bg-white">
+              <select name="studentType" value={formData.studentType} onChange={handleChange} className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all bg-white">
                 <option value="center">Center</option>
                 <option value="one-on-one">One-on-One</option>
               </select>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">Monthly Tuition ($)</label>
-              <input name="monthlyTuition" value={formData.monthlyTuition} onChange={handleChange} type="number" min="0" step="0.01" className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none" placeholder="0.00" />
+              <input name="monthlyTuition" value={formData.monthlyTuition} onChange={handleChange} type="number" min="0" step="0.01" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" placeholder="0.00" />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">Start Date</label>
-              <input name="startDate" value={formData.startDate} onChange={handleChange} type="date" className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none" />
+              <input name="startDate" value={formData.startDate} onChange={handleChange} type="date" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">Subjects (comma-separated)</label>
-              <input name="subjects" value={formData.subjects} onChange={handleChange} type="text" className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none" placeholder="Math, English" />
+              <input name="subjects" value={formData.subjects} onChange={handleChange} type="text" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" placeholder="Math, English" />
             </div>
           </div>
         </div>
@@ -215,7 +215,7 @@ const AddStudent = () => {
         {/* Notes */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-slate-700">Notes</label>
-          <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:ring-blue-500 outline-none resize-y" placeholder="Any special requirements or notes..."></textarea>
+          <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all resize-y" placeholder="Any special requirements or notes..."></textarea>
         </div>
 
         {/* Submit */}
@@ -223,9 +223,9 @@ const AddStudent = () => {
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-xl shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="bg-brand-blue hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-xl shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            {loading ? 'Saving...' : 'Add Student'}
+            {loading ? <><Loader2 size={18} className="animate-spin" /> Saving...</> : 'Add Student'}
           </button>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getStudentById, updateStudent } from '../services/studentService';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { getStudentById, updateStudent, deleteStudent } from '../services/studentService';
 import { ArrowLeft, Mail, Phone, BookOpen, Calendar, DollarSign, Loader2, User, Edit, Save, X, Trash2, Plus, CheckCircle, AlertCircle, Archive, RefreshCcw } from 'lucide-react';
 
 const ArrayInput = ({ label, field, type = "text", placeholder, formData, handleArrayChange, removeArrayItem, addArrayItem }) => (
@@ -38,6 +38,7 @@ const ArrayInput = ({ label, field, type = "text", placeholder, formData, handle
 
 const StudentDetail = () => {
   const { studentId } = useParams();
+  const navigate = useNavigate();
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -48,10 +49,14 @@ const StudentDetail = () => {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
 
-  // Archive state
+  const [archiving, setArchiving] = useState(false);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [archiveReason, setArchiveReason] = useState('');
-  const [archiving, setArchiving] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+
+  // Delete state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -180,6 +185,7 @@ const StudentDetail = () => {
       };
       await updateStudent(studentId, updateData);
       setStudent(prev => ({ ...prev, ...updateData }));
+      setShowRestoreModal(false);
       setStatus({ type: 'success', message: 'Student restored to active status.' });
       setTimeout(() => setStatus({ type: '', message: '' }), 3000);
     } catch (error) {
@@ -187,6 +193,22 @@ const StudentDetail = () => {
       setStatus({ type: 'error', message: 'Failed to restore student.' });
     } finally {
       setArchiving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setStatus({ type: '', message: '' });
+
+    try {
+      await deleteStudent(studentId);
+      setStatus({ type: 'success', message: 'Student permanently deleted.' });
+      setTimeout(() => navigate('/students'), 1500);
+    } catch (error) {
+      console.error("Delete error:", error);
+      setStatus({ type: 'error', message: 'Failed to delete student.' });
+      setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -254,8 +276,7 @@ const StudentDetail = () => {
             <div className="flex items-center gap-3">
               {student.status === 'inactive' ? (
                 <button
-                  onClick={handleRestore}
-                  disabled={archiving}
+                  onClick={() => setShowRestoreModal(true)}
                   className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 hover:text-brand-green transition-colors flex items-center gap-2 shadow-sm"
                 >
                   <RefreshCcw size={18} /> Restore Student
@@ -268,6 +289,12 @@ const StudentDetail = () => {
                   <Archive size={18} /> Archive Student
                 </button>
               )}
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-red-50 hover:text-brand-red hover:border-red-200 transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <Trash2 size={18} /> Delete Student
+              </button>
               <button
                 onClick={handleEditClick}
                 className="px-5 py-2.5 bg-brand-blue text-white font-medium rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
@@ -556,6 +583,87 @@ const StudentDetail = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-red-600">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <AlertCircle size={20} /> Permanent Delete
+              </h3>
+              <button onClick={() => setShowDeleteModal(false)} className="text-white/80 hover:text-white">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} />
+              </div>
+              <p className="text-center text-slate-600">
+                Are you sure you want to permanently delete <strong>{student.firstName} {student.lastName}</strong>? This action cannot be undone and all records for this student will be lost.
+              </p>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 px-4 py-2 bg-white text-slate-700 border border-slate-200 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {deleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Restore Confirmation Modal */}
+      {showRestoreModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-green-50">
+              <h3 className="text-xl font-bold text-green-700 flex items-center gap-2">
+                <CheckCircle size={20} /> Restore Student
+              </h3>
+              <button onClick={() => setShowRestoreModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <RefreshCcw size={32} />
+              </div>
+              <p className="text-center text-slate-600">
+                Are you sure you want to restore <strong>{student.firstName} {student.lastName}</strong> to active status? They will reappear in Attendance and Tuition lists.
+              </p>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowRestoreModal(false)}
+                  className="flex-1 px-4 py-2 bg-white text-slate-700 border border-slate-200 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRestore}
+                  disabled={archiving}
+                  className="flex-1 px-4 py-2 bg-brand-green text-white font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {archiving ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+                  Restore
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
