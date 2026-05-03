@@ -61,25 +61,25 @@ const createLeadFormFromLead = (lead) => ({
 });
 
 const priorityBadgeStyles = {
-  Hot: 'bg-red-50 text-brand-red border-red-200',
-  Warm: 'bg-orange-50 text-orange-700 border-orange-200',
-  Cold: 'bg-blue-50 text-slate-600 border-blue-100',
+  Hot: 'bg-brand-red/10 text-brand-red border-brand-red/20',
+  Warm: 'bg-brand-yellow/20 text-[#765300] border-brand-yellow/45',
+  Cold: 'bg-brand-blue/10 text-slate-600 border-brand-blue/15',
 };
 
 const statusBadgeStyles = {
-  New: 'bg-blue-50 text-brand-blue border-blue-200',
-  'Reached Out': 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  'Follow-Up Needed': 'bg-brand-yellow/20 text-yellow-900 border-brand-yellow/40',
-  'Trial Scheduled': 'bg-blue-50 text-brand-blue border-blue-200',
+  New: 'bg-brand-blue/10 text-brand-blue border-brand-blue/20',
+  'Reached Out': 'bg-brand-blue/10 text-brand-blue border-brand-blue/20',
+  'Follow-Up Needed': 'bg-brand-yellow/20 text-[#765300] border-brand-yellow/45',
+  'Trial Scheduled': 'bg-brand-green/10 text-brand-green border-brand-green/20',
   Converted: 'bg-brand-green/10 text-brand-green border-brand-green/20',
   Closed: 'bg-slate-100 text-slate-600 border-slate-200',
   'Not Interested': 'bg-slate-100 text-slate-600 border-slate-200',
 };
 
 const followUpStyles = {
-  overdue: 'bg-red-50 text-brand-red border-red-200',
-  today: 'bg-brand-yellow/20 text-yellow-900 border-brand-yellow/40',
-  upcoming: 'bg-blue-50 text-brand-blue border-blue-200',
+  overdue: 'bg-brand-red/10 text-brand-red border-brand-red/20',
+  today: 'bg-brand-yellow/20 text-[#765300] border-brand-yellow/45',
+  upcoming: 'bg-brand-blue/10 text-brand-blue border-brand-blue/20',
   none: 'bg-slate-100 text-slate-500 border-slate-200',
 };
 
@@ -207,18 +207,18 @@ const getSortedActivityLog = (activityLog = []) => {
 const getOptionLabel = (value) => value || 'All';
 
 const Badge = ({ value, styles }) => (
-  <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${styles[value] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+  <span className={`inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-black ${styles[value] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
     {value || 'Not set'}
   </span>
 );
 
 const FilterSelect = ({ label, value, options, onChange }) => (
-  <label className="flex min-w-[150px] flex-col gap-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+  <label className="flex min-w-[150px] flex-col gap-1.5 text-xs font-black uppercase tracking-[0.14em] text-slate-500">
     {label}
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition-colors focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
+      className="select-field text-sm font-bold normal-case tracking-normal text-slate-700"
     >
       {options.map((option) => (
         <option key={option} value={option}>{getOptionLabel(option)}</option>
@@ -228,7 +228,7 @@ const FilterSelect = ({ label, value, options, onChange }) => (
 );
 
 const FormField = ({ label, required = false, children }) => (
-  <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-700">
+  <label className="flex flex-col gap-1.5 text-sm font-bold text-slate-700">
     <span>
       {label}
       {required && <span className="text-brand-red"> *</span>}
@@ -237,7 +237,7 @@ const FormField = ({ label, required = false, children }) => (
   </label>
 );
 
-const textInputClasses = "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-colors focus:border-brand-blue focus:ring-1 focus:ring-brand-blue";
+const textInputClasses = "input-field text-sm text-slate-700";
 
 const MultiSelectCheckboxes = ({ label, options, values, onChange }) => {
   const toggleValue = (option) => {
@@ -251,10 +251,10 @@ const MultiSelectCheckboxes = ({ label, options, values, onChange }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm font-medium text-slate-700">{label}</p>
+      <p className="text-sm font-bold text-slate-700">{label}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {options.map((option) => (
-          <label key={option} className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600">
+          <label key={option} className="flex items-center gap-2 rounded-2xl border border-brand-blue/10 bg-white/65 px-3 py-2 text-sm font-medium text-slate-600 shadow-sm">
             <input
               type="checkbox"
               checked={values.includes(option)}
@@ -270,13 +270,13 @@ const MultiSelectCheckboxes = ({ label, options, values, onChange }) => {
 };
 
 const SummaryCard = ({ label, value, icon: Icon, color }) => (
-  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div className="bento-card p-5">
     <div className="flex items-center justify-between gap-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p>
-        <p className="mt-2 text-2xl font-bold text-slate-800">{value}</p>
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">{label}</p>
+        <p className="mt-2 text-3xl font-black tracking-tight text-brand-ink">{value}</p>
       </div>
-      <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${color}`}>
+      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ${color}`}>
         <Icon size={22} />
       </div>
     </div>
@@ -391,12 +391,12 @@ const Leads = () => {
   }, [leadSourceFilter, leads, ownerFilter, priorityFilter, searchQuery, serviceInterestFilter, statusFilter, statusGroup]);
 
   const summaryCards = [
-    { label: 'Total Active Leads', value: summary.totalActiveLeads, icon: ClipboardList, color: 'bg-brand-blue/10 text-brand-blue' },
-    { label: 'Hot Leads', value: summary.hotLeads, icon: Flame, color: 'bg-red-50 text-brand-red' },
-    { label: 'Follow-Ups Due Today', value: summary.followUpsDueToday, icon: Target, color: 'bg-brand-yellow/20 text-yellow-900' },
-    { label: 'Overdue Follow-Ups', value: summary.overdueFollowUps, icon: AlertCircle, color: 'bg-red-50 text-brand-red' },
-    { label: 'Trial Scheduled', value: summary.trialScheduled, icon: TrendingUp, color: 'bg-green-50 text-green-700' },
-    { label: 'Converted', value: summary.converted, icon: UserCheck, color: 'bg-brand-green/10 text-brand-green' },
+    { label: 'Total Active Leads', value: summary.totalActiveLeads, icon: ClipboardList, color: 'bg-brand-blue/10 text-brand-blue ring-brand-blue/10' },
+    { label: 'Hot Leads', value: summary.hotLeads, icon: Flame, color: 'bg-brand-red/10 text-brand-red ring-brand-red/10' },
+    { label: 'Follow-Ups Due Today', value: summary.followUpsDueToday, icon: Target, color: 'bg-brand-yellow/20 text-[#765300] ring-brand-yellow/20' },
+    { label: 'Overdue Follow-Ups', value: summary.overdueFollowUps, icon: AlertCircle, color: 'bg-brand-red/10 text-brand-red ring-brand-red/10' },
+    { label: 'Trial Scheduled', value: summary.trialScheduled, icon: TrendingUp, color: 'bg-brand-green/10 text-brand-green ring-brand-green/10' },
+    { label: 'Converted', value: summary.converted, icon: UserCheck, color: 'bg-brand-green/10 text-brand-green ring-brand-green/10' },
   ];
 
   const selectedLeadActivities = useMemo(
@@ -566,24 +566,37 @@ const Leads = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Leads</h1>
-          <p className="text-slate-500">Track active prospective students and follow-up priorities.</p>
+    <div className="space-y-7 pb-12">
+      <header className="glass-card relative overflow-hidden rounded-4xl border border-white/70 p-6 shadow-podium-glass md:p-8">
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-brand-yellow to-brand-green" />
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-blue/10 bg-white/65 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-brand-blue shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-brand-yellow shadow-[0_0_0_4px_rgba(254,195,29,0.18)]" />
+              CRM Pipeline
+            </div>
+            <h1 className="text-4xl font-black tracking-tight text-brand-ink">Leads</h1>
+            <p className="mt-3 text-base font-medium leading-7 text-slate-600">Track active prospective students, follow-up priorities, and conversion progress.</p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
+            <div className="rounded-3xl border border-brand-blue/10 bg-white/65 px-4 py-3 shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Default View</p>
+              <p className="mt-1 text-sm font-black text-brand-ink">{statusGroup}</p>
+            </div>
+            <button
+              type="button"
+              onClick={openAddModal}
+              className="btn-primary w-full sm:w-fit"
+            >
+              <Plus size={18} />
+              Add Lead
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={openAddModal}
-          className="inline-flex w-fit items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-900"
-        >
-          <Plus size={18} />
-          Add Lead
-        </button>
       </header>
 
       {successMessage && (
-        <div className="rounded-xl border border-green-200 bg-green-50 p-4 font-medium text-green-700">
+        <div className="rounded-3xl border border-brand-green/20 bg-brand-green/10 p-4 font-bold text-brand-green shadow-sm">
           {successMessage}
         </div>
       )}
@@ -594,39 +607,39 @@ const Leads = () => {
         ))}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="glass-card rounded-4xl border border-white/70 p-4 shadow-podium-glass md:p-5">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full max-w-xl">
+            <div className="relative w-full max-w-2xl">
               <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search by student, parent, phone, or notes..."
-                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-11 pr-10 text-sm shadow-sm outline-none transition-all focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
+                className="input-field py-3 pl-11 pr-10 text-sm"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:text-slate-600"
+                  className="focus-ring absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                 >
                   <X size={16} />
                 </button>
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
+            <div className="flex flex-wrap items-center gap-1 rounded-[1.75rem] border border-brand-blue/10 bg-white/70 p-1.5 shadow-sm">
               {STATUS_GROUPS.map((group) => (
                 <button
                   key={group}
                   type="button"
                   onClick={() => setStatusGroup(group)}
-                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`focus-ring rounded-full px-3 py-2 text-sm font-bold transition-all ${
                     statusGroup === group
-                      ? 'bg-brand-blue text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                      ? 'bg-brand-blue text-white shadow-podium-soft'
+                      : 'text-slate-600 hover:bg-white hover:text-brand-blue'
                   }`}
                 >
                   {group}
@@ -646,80 +659,85 @@ const Leads = () => {
       </section>
 
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 font-medium">
+        <div className="flex items-center gap-3 rounded-3xl border border-brand-red/20 bg-brand-red/10 p-4 font-bold text-brand-red shadow-sm">
           <AlertCircle size={20} className="shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {loading ? (
-        <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="glass-card flex h-64 flex-col items-center justify-center rounded-4xl border border-white/70 shadow-podium-glass">
           <Loader2 size={32} className="mb-4 animate-spin text-brand-blue" />
-          <p className="font-medium text-slate-500">Loading leads...</p>
+          <p className="font-bold text-slate-500">Loading leads...</p>
         </div>
       ) : filteredLeads.length === 0 ? (
-        <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50">
+        <div className="glass-card flex h-64 flex-col items-center justify-center rounded-4xl border border-white/70 p-8 text-center shadow-podium-glass">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-brand-blue/10 ring-1 ring-brand-blue/10">
             <ClipboardList className="h-8 w-8 text-slate-400" />
           </div>
-          <h2 className="text-xl font-semibold text-slate-700">
+          <h2 className="text-xl font-black tracking-tight text-slate-700">
             {leads.length === 0 ? 'No leads yet.' : 'No matching leads found.'}
           </h2>
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-[1180px] w-full border-collapse text-left">
+        <div className="glass-card overflow-hidden rounded-4xl border border-white/70 shadow-podium-glass">
+          <div className="border-b border-brand-blue/10 bg-white/55 px-5 py-4">
+            <p className="text-sm font-bold text-slate-600">
+              Showing <span className="text-brand-blue">{filteredLeads.length}</span> leads
+            </p>
+          </div>
+          <div className="overflow-x-auto overscroll-x-contain [scrollbar-color:rgba(7,49,149,0.35)_rgba(255,255,255,0.6)] [scrollbar-width:thin]">
+            <table className="w-full min-w-[1180px] border-separate border-spacing-0 text-left">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Student Name</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Grade</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Subjects</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Parent Name</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Parent Phone</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Service Interest</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Owner</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Priority</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Next Follow-Up</th>
-                  <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right">View</th>
+                <tr className="bg-white/78">
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Student Name</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Grade</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Subjects</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Parent Name</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Parent Phone</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Service Interest</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Owner</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Priority</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Status</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-xs font-black uppercase tracking-[0.15em] text-slate-500">Next Follow-Up</th>
+                  <th className="border-b border-brand-blue/10 px-5 py-4 text-right text-xs font-black uppercase tracking-[0.15em] text-slate-500">View</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {filteredLeads.map((lead) => {
                   const followUpState = getFollowUpState(lead, today);
 
                   return (
-                  <tr key={lead.id} className="transition-colors hover:bg-slate-50">
-                    <td className="px-5 py-4 align-top font-semibold text-slate-800 whitespace-nowrap">{lead.studentName}</td>
-                    <td className="px-5 py-4 align-top text-sm text-slate-600 whitespace-nowrap">{lead.grade || 'Not set'}</td>
-                    <td className="px-5 py-4 align-top text-sm text-slate-600 max-w-[220px]">{formatList(lead.subjects)}</td>
-                    <td className="px-5 py-4 align-top text-sm text-slate-600 whitespace-nowrap">{lead.parentName || 'Not set'}</td>
-                    <td className="px-5 py-4 align-top text-sm text-slate-600 whitespace-nowrap">
+                  <tr key={lead.id} className="transition-colors hover:bg-white/70">
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top font-black text-slate-800 whitespace-nowrap">{lead.studentName}</td>
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top text-sm text-slate-600 whitespace-nowrap">{lead.grade || 'Not set'}</td>
+                    <td className="max-w-[220px] border-t border-brand-blue/10 px-5 py-4 align-top text-sm text-slate-600">{formatList(lead.subjects)}</td>
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top text-sm text-slate-600 whitespace-nowrap">{lead.parentName || 'Not set'}</td>
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top text-sm text-slate-600 whitespace-nowrap">
                       {lead.parentPhone ? (
                         <a href={`tel:${lead.parentPhone}`} className="hover:text-brand-blue">{lead.parentPhone}</a>
                       ) : (
                         'Not set'
                       )}
                     </td>
-                    <td className="px-5 py-4 align-top text-sm text-slate-600 max-w-[220px]">{formatList(lead.serviceInterests)}</td>
-                    <td className="px-5 py-4 align-top text-sm text-slate-600 whitespace-nowrap">{lead.owner || 'Not set'}</td>
-                    <td className="px-5 py-4 align-top">
+                    <td className="max-w-[220px] border-t border-brand-blue/10 px-5 py-4 align-top text-sm text-slate-600">{formatList(lead.serviceInterests)}</td>
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top text-sm font-bold text-slate-600 whitespace-nowrap">{lead.owner || 'Not set'}</td>
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top">
                       <Badge value={lead.priority} styles={priorityBadgeStyles} />
                     </td>
-                    <td className="px-5 py-4 align-top">
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top">
                       <Badge value={lead.status || 'New'} styles={statusBadgeStyles} />
                     </td>
-                    <td className="px-5 py-4 align-top text-sm whitespace-nowrap">
-                      <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${followUpStyles[followUpState]}`}>
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top text-sm whitespace-nowrap">
+                      <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-black ${followUpStyles[followUpState]}`}>
                         {formatDate(lead.nextFollowUpDate)}
                       </span>
                     </td>
-                    <td className="px-5 py-4 align-top text-right">
+                    <td className="border-t border-brand-blue/10 px-5 py-4 align-top text-right">
                       <button
                         type="button"
                         onClick={() => handleViewLead(lead)}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-blue/10 px-3 py-2 text-sm font-medium text-brand-blue transition-colors hover:bg-brand-blue hover:text-white"
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-blue/10 bg-white/75 px-3 py-2 text-sm font-black text-brand-blue shadow-sm transition-all hover:bg-brand-blue hover:text-white hover:shadow-podium-soft"
                       >
                         <Eye size={16} />
                         View
@@ -735,7 +753,7 @@ const Leads = () => {
       )}
 
       {selectedLead && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm">
           <button
             type="button"
             className="hidden flex-1 cursor-default md:block"
@@ -743,11 +761,12 @@ const Leads = () => {
             aria-label="Close lead drawer"
             disabled={savingEdit}
           />
-          <aside className="flex h-full w-full max-w-2xl flex-col bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5">
+          <aside className="glass-card flex h-full w-full max-w-2xl flex-col overflow-hidden border-l border-white/70 shadow-podium-glass">
+            <div className="relative flex items-start justify-between gap-4 border-b border-brand-blue/10 bg-white/70 px-4 py-4 backdrop-blur sm:px-6 sm:py-5">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-brand-yellow to-brand-green" />
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Lead Details</p>
-                <h2 className="mt-1 text-2xl font-bold text-slate-800">{selectedLead.studentName || 'Untitled Lead'}</h2>
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-blue/65">Lead Details</p>
+                <h2 className="mt-1 text-2xl font-black tracking-tight text-brand-ink">{selectedLead.studentName || 'Untitled Lead'}</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Badge value={editForm.priority} styles={priorityBadgeStyles} />
                   <Badge value={editForm.status || 'New'} styles={statusBadgeStyles} />
@@ -756,7 +775,7 @@ const Leads = () => {
               <button
                 type="button"
                 onClick={closeDrawer}
-                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                className="focus-ring rounded-full p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
                 disabled={savingEdit}
               >
                 <X size={20} />
@@ -766,7 +785,7 @@ const Leads = () => {
             <form onSubmit={handleUpdateLead} className="flex min-h-0 flex-1 flex-col">
               <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
                 {drawerError && (
-                  <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+                  <div className="flex items-center gap-3 rounded-3xl border border-brand-red/20 bg-brand-red/10 p-4 text-sm font-bold text-brand-red">
                     <AlertCircle size={18} className="shrink-0" />
                     <span>{drawerError}</span>
                   </div>
@@ -949,18 +968,18 @@ const Leads = () => {
                   />
                 </FormField>
 
-                <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <section className="space-y-4 rounded-4xl border border-brand-blue/10 bg-white/60 p-4 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-base font-bold text-slate-800">Activity Log</h3>
-                      <p className="text-sm text-slate-500">Newest updates appear first.</p>
+                      <h3 className="text-base font-black text-brand-ink">Activity Log</h3>
+                      <p className="text-sm font-medium text-slate-500">Newest updates appear first.</p>
                     </div>
                     <MessageSquarePlus className="h-5 w-5 text-brand-blue" />
                   </div>
 
                   <form onSubmit={handleAddActivity} className="space-y-3">
                     {activityError && (
-                      <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
+                      <div className="rounded-2xl border border-brand-red/20 bg-brand-red/10 p-3 text-sm font-bold text-brand-red">
                         {activityError}
                       </div>
                     )}
@@ -973,7 +992,7 @@ const Leads = () => {
                     <button
                       type="submit"
                       disabled={savingActivity}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {savingActivity ? <Loader2 size={18} className="animate-spin" /> : <MessageSquarePlus size={18} />}
                       {savingActivity ? 'Saving...' : 'Add Activity Update'}
@@ -981,15 +1000,15 @@ const Leads = () => {
                   </form>
 
                   {selectedLeadActivities.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">
+                    <div className="rounded-3xl border border-dashed border-brand-blue/20 bg-white/70 p-4 text-sm font-medium text-slate-500">
                       No activity updates yet.
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {selectedLeadActivities.map((activity, index) => (
-                        <article key={`${activity.createdBy || 'activity'}-${index}`} className="rounded-xl border border-slate-200 bg-white p-4">
-                          <p className="whitespace-pre-wrap text-sm font-medium text-slate-800">{activity.note}</p>
-                          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        <article key={`${activity.createdBy || 'activity'}-${index}`} className="rounded-3xl border border-brand-blue/10 bg-white/80 p-4 shadow-sm">
+                          <p className="whitespace-pre-wrap text-sm font-semibold leading-6 text-slate-800">{activity.note}</p>
+                          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold text-slate-500">
                             <span>{formatActivityDate(activity.createdAt)}</span>
                             <span>Created by {activity.createdBy || 'system'}</span>
                           </div>
@@ -1000,19 +1019,19 @@ const Leads = () => {
                 </section>
               </div>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
+              <div className="flex flex-col-reverse gap-3 border-t border-brand-blue/10 bg-white/70 px-4 py-4 backdrop-blur sm:flex-row sm:justify-end sm:px-6">
                 <button
                   type="button"
                   onClick={closeDrawer}
                   disabled={savingEdit}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-secondary disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {savingEdit ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                   {savingEdit ? 'Saving...' : 'Save Changes'}
@@ -1024,17 +1043,22 @@ const Leads = () => {
       )}
 
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4 sm:px-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="glass-card max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-4xl border border-white/70 shadow-podium-glass">
+            <div className="relative flex items-center justify-between border-b border-brand-blue/10 bg-white/70 px-4 py-4 backdrop-blur sm:px-6">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-brand-yellow to-brand-green" />
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Add Lead</h2>
-                <p className="text-sm text-slate-500">Capture the first contact details and next step.</p>
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand-blue/10 bg-white/70 px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-brand-blue shadow-sm">
+                  <Plus size={13} />
+                  New Prospect
+                </div>
+                <h2 className="text-xl font-black tracking-tight text-brand-ink">Add Lead</h2>
+                <p className="text-sm font-medium text-slate-500">Capture the first contact details and next step.</p>
               </div>
               <button
                 type="button"
                 onClick={closeAddModal}
-                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                className="focus-ring rounded-full p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
                 disabled={savingLead}
               >
                 <X size={20} />
@@ -1044,7 +1068,7 @@ const Leads = () => {
             <form onSubmit={handleAddLead} className="max-h-[calc(92vh-73px)] overflow-y-auto">
               <div className="space-y-6 p-4 sm:p-6">
                 {formError && (
-                  <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+                  <div className="flex items-center gap-3 rounded-3xl border border-brand-red/20 bg-brand-red/10 p-4 text-sm font-bold text-brand-red">
                     <AlertCircle size={18} className="shrink-0" />
                     <span>{formError}</span>
                   </div>
@@ -1228,19 +1252,19 @@ const Leads = () => {
                 </FormField>
               </div>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
+              <div className="flex flex-col-reverse gap-3 border-t border-brand-blue/10 bg-white/70 px-4 py-4 backdrop-blur sm:flex-row sm:justify-end sm:px-6">
                 <button
                   type="button"
                   onClick={closeAddModal}
                   disabled={savingLead}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-secondary disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingLead}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {savingLead ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                   {savingLead ? 'Saving...' : 'Save Lead'}

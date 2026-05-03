@@ -27,6 +27,8 @@ const normalizeOptionalNumber = (value) => {
  * @param {string} studentData.startDate
  * @param {number} studentData.monthlyTuition
  * @param {number|null} studentData.expectedMonthlyTutoringHours
+ * @param {string} studentData.assignedTutorName
+ * @param {number|null} studentData.tutorHourlyPay
  * @param {string} studentData.studentType - "center" or "one-on-one"
  * @param {string} studentData.centerClass - "Abir", "Rahat", or "Unassigned"
  * @param {string} studentData.notes
@@ -48,7 +50,11 @@ export const addStudent = async (studentData) => {
       monthlyTuition: studentData.monthlyTuition || 0,
       studentType,
       ...(studentType === 'center' ? { centerClass: studentData.centerClass || 'Unassigned' } : {}),
-      ...(studentType === 'one-on-one' ? { expectedMonthlyTutoringHours: normalizeOptionalNumber(studentData.expectedMonthlyTutoringHours) } : {}),
+      ...(studentType === 'one-on-one' ? {
+        expectedMonthlyTutoringHours: normalizeOptionalNumber(studentData.expectedMonthlyTutoringHours),
+        assignedTutorName: studentData.assignedTutorName?.trim() || '',
+        tutorHourlyPay: normalizeOptionalNumber(studentData.tutorHourlyPay),
+      } : {}),
       notes: studentData.notes || '',
       status: studentData.status || 'active',
       createdAt: Timestamp.now(),
@@ -142,8 +148,12 @@ export const updateStudent = async (studentId, updateData) => {
 
     if (dataToNormalize.studentType === 'one-on-one') {
       dataToNormalize.expectedMonthlyTutoringHours = normalizeOptionalNumber(dataToNormalize.expectedMonthlyTutoringHours);
+      dataToNormalize.assignedTutorName = dataToNormalize.assignedTutorName?.trim() || '';
+      dataToNormalize.tutorHourlyPay = normalizeOptionalNumber(dataToNormalize.tutorHourlyPay);
     } else if (dataToNormalize.studentType === 'center') {
       dataToNormalize.expectedMonthlyTutoringHours = deleteField();
+      dataToNormalize.assignedTutorName = deleteField();
+      dataToNormalize.tutorHourlyPay = deleteField();
     }
     
     // We update updatedAt timestamp

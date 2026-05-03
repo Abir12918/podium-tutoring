@@ -35,6 +35,39 @@ export const calculateEarnedAmount = (completedTutoringHours, hourlyRate) => {
   return completedHours * rate;
 };
 
+export const calculateExpectedTutorExpense = (expectedTutoringHours, tutorHourlyPay) => {
+  const expectedHours = normalizeOptionalNumber(expectedTutoringHours);
+  const hourlyPay = normalizeOptionalNumber(tutorHourlyPay);
+
+  if (!expectedHours || expectedHours <= 0 || !hourlyPay || hourlyPay <= 0) {
+    return null;
+  }
+
+  return expectedHours * hourlyPay;
+};
+
+export const calculateTutorExpense = (completedTutoringHours, tutorHourlyPay) => {
+  const completedHours = normalizeOptionalNumber(completedTutoringHours);
+  const hourlyPay = normalizeOptionalNumber(tutorHourlyPay);
+
+  if (completedHours === null || !hourlyPay || hourlyPay <= 0) {
+    return null;
+  }
+
+  return completedHours * hourlyPay;
+};
+
+export const calculateProfit = (revenue, expense) => {
+  const normalizedRevenue = normalizeOptionalNumber(revenue);
+  const normalizedExpense = normalizeOptionalNumber(expense);
+
+  if (normalizedRevenue === null || normalizedExpense === null) {
+    return null;
+  }
+
+  return normalizedRevenue - normalizedExpense;
+};
+
 export const calculatePaymentStatus = (paidAmount, expectedAmount) => {
   const paid = Number(paidAmount) || 0;
   const expected = Number(expectedAmount) || 0;
@@ -88,6 +121,14 @@ export const saveTuitionRecord = async (record) => {
     const completedTutoringHours = normalizeOptionalNumber(record.completedTutoringHours);
     const hourlyRate = calculateHourlyRate(expectedAmount, expectedTutoringHours);
     const earnedAmount = calculateEarnedAmount(completedTutoringHours, hourlyRate);
+    const tutorHourlyPay = normalizeOptionalNumber(record.tutorHourlyPay);
+    const expectedTutorExpense = calculateExpectedTutorExpense(expectedTutoringHours, tutorHourlyPay);
+    const calculatedTutorExpense = calculateTutorExpense(completedTutoringHours, tutorHourlyPay);
+    const tutorExpense = record.tutorExpense === '' || record.tutorExpense === null || record.tutorExpense === undefined
+      ? calculatedTutorExpense
+      : normalizeOptionalNumber(record.tutorExpense);
+    const expectedProfit = calculateProfit(expectedAmount, expectedTutorExpense);
+    const earnedProfit = calculateProfit(earnedAmount, tutorExpense);
 
     const tuitionData = {
       studentId: record.studentId,
@@ -109,6 +150,12 @@ export const saveTuitionRecord = async (record) => {
       tuitionData.completedTutoringHours = completedTutoringHours;
       tuitionData.hourlyRate = hourlyRate;
       tuitionData.earnedAmount = earnedAmount;
+      tuitionData.tutorName = record.tutorName?.trim() || '';
+      tuitionData.tutorHourlyPay = tutorHourlyPay;
+      tuitionData.expectedTutorExpense = expectedTutorExpense;
+      tuitionData.tutorExpense = tutorExpense;
+      tuitionData.expectedProfit = expectedProfit;
+      tuitionData.earnedProfit = earnedProfit;
     }
 
     // Use setDoc with merge to preserve createdAt on existing documents
@@ -158,7 +205,11 @@ export const generateTuitionRecordsForMonth = async (monthKey, targetStudentType
           tuitionType,
           monthKey: monthKey,
           expectedAmount: Number(student.monthlyTuition) || 0,
-          ...(studentType === 'one-on-one' ? { expectedTutoringHours: normalizeOptionalNumber(student.expectedMonthlyTutoringHours) } : {}),
+          ...(studentType === 'one-on-one' ? {
+            expectedTutoringHours: normalizeOptionalNumber(student.expectedMonthlyTutoringHours),
+            tutorName: student.assignedTutorName || '',
+            tutorHourlyPay: normalizeOptionalNumber(student.tutorHourlyPay),
+          } : {}),
           paidAmount: 0,
           paymentStatus: 'unpaid',
           paymentDate: '',

@@ -12,10 +12,12 @@ export interface Student {
   parentName?: string;
   grade?: string;
   subjects?: string[];
-  studentType: 'center' | 'online';
+  studentType: 'center' | 'one-on-one';
   centerClass?: 'Abir' | 'Rahat' | 'Unassigned';
   tuitionRate: number;
   expectedMonthlyTutoringHours?: number | null;
+  assignedTutorName?: string;
+  tutorHourlyPay?: number | null;
   startDate: string;
   isActive: boolean;
   centerLocation?: string;
@@ -47,6 +49,12 @@ export interface TuitionRecord {
   completedTutoringHours?: number | null;
   hourlyRate?: number | null;
   earnedAmount?: number | null;
+  tutorName?: string;
+  tutorHourlyPay?: number | null;
+  expectedTutorExpense?: number | null;
+  tutorExpense?: number | null;
+  expectedProfit?: number | null;
+  earnedProfit?: number | null;
   paidAmount: number;
   paymentStatus: 'unpaid' | 'partial' | 'paid';
   paymentDate?: string; // YYYY-MM-DD

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getTuitionRecordsForMonth } from '../services/tuitionService';
+import { calculateExpectedTutorExpense, calculateProfit, getTuitionRecordsForMonth } from '../services/tuitionService';
 import { getStudents } from '../services/studentService';
 import { DollarSign, Users, ArrowRight, Loader2, CreditCard, Clock, UserPlus, CalendarCheck, GraduationCap, UserX } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +37,13 @@ const Home = () => {
   const expectedTotal = records.reduce((sum, r) => sum + (Number(r.expectedAmount) || 0), 0);
   const collectedTotal = records.reduce((sum, r) => sum + (Number(r.paidAmount) || 0), 0);
   const remainingTotal = expectedTotal - collectedTotal;
+  const oneOnOneExpectedProfit = records
+    .filter((record) => record.studentType === 'one-on-one')
+    .reduce((sum, record) => {
+      const expectedTutorExpense = record.expectedTutorExpense ?? calculateExpectedTutorExpense(record.expectedTutoringHours, record.tutorHourlyPay);
+      const expectedProfit = record.expectedProfit ?? calculateProfit(record.expectedAmount, expectedTutorExpense);
+      return sum + (Number(expectedProfit) || 0);
+    }, 0);
 
   const paidStudentsCount = records.filter(r => r.paymentStatus === 'paid').length;
   const unpaidPartialCount = records.filter(r => r.paymentStatus === 'unpaid' || r.paymentStatus === 'partial').length;
@@ -49,170 +56,238 @@ const Home = () => {
 
   return (
     <div className="space-y-8 pb-12">
-      <header>
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
-          Welcome back, {currentUser?.displayName?.split(' ')[0] || 'Teacher'}
-        </h1>
-        <p className="text-slate-500 mt-2">Here's your center's overview for {displayMonth}.</p>
+      <header className="glass-card relative overflow-hidden rounded-4xl border border-white/70 p-7 shadow-podium-glass">
+        <div className="absolute inset-0 -z-0 bg-[radial-gradient(circle_at_88%_18%,rgba(254,195,29,0.24),transparent_16rem),radial-gradient(circle_at_16%_82%,rgba(7,49,149,0.10),transparent_18rem)]" />
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-blue/10 bg-white/65 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-brand-blue shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-brand-yellow shadow-[0_0_0_4px_rgba(254,195,29,0.18)]" />
+              {displayMonth}
+            </div>
+            <h1 className="text-4xl font-black tracking-tight text-brand-ink">
+              Welcome back, {currentUser?.displayName?.split(' ')[0] || 'Teacher'}
+            </h1>
+            <p className="mt-3 text-base font-medium leading-7 text-slate-600">
+              Here&apos;s the current pulse of students, tuition, and monthly operations.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:min-w-[280px]">
+            <div className="rounded-3xl border border-brand-blue/10 bg-white/65 p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Students</p>
+              <p className="mt-2 text-2xl font-black text-brand-blue">{activeStudents.length}</p>
+            </div>
+            <div className="rounded-3xl border border-brand-green/10 bg-white/65 p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Collected</p>
+              <p className="mt-2 text-2xl font-black text-brand-green">${collectedTotal.toFixed(0)}</p>
+            </div>
+          </div>
+        </div>
       </header>
 
       {loading ? (
-        <div className="flex items-center justify-center h-48 bg-white rounded-2xl border border-slate-100 shadow-sm">
+        <div className="glass-card flex h-48 items-center justify-center rounded-4xl border border-white/70 shadow-podium-glass">
           <Loader2 size={32} className="animate-spin text-brand-blue" />
         </div>
       ) : (
         <div className="space-y-8">
           {/* Student Stats */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-800">Student Overview</h2>
-              <Link to="/students" className="text-sm font-medium text-brand-blue hover:text-blue-700 flex items-center gap-1 group">
-                View All <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-blue/65">Roster</p>
+                <h2 className="mt-1 text-2xl font-black tracking-tight text-brand-ink">Student Overview</h2>
+              </div>
+              <Link to="/students" className="btn-ghost group min-h-0 px-3 py-2">
+                View All <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 bg-brand-green/10 text-brand-green rounded-lg flex items-center justify-center">
-                    <Users size={18} />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="bento-card p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-sm font-bold text-slate-500">Active</span>
+                    <p className="mt-3 text-3xl font-black tracking-tight text-brand-green">{activeStudents.length}</p>
                   </div>
-                  <span className="text-sm font-medium text-slate-500">Active</span>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-green/10 text-brand-green ring-1 ring-brand-green/10">
+                    <Users size={20} />
+                  </div>
                 </div>
-                <p className="text-2xl font-bold text-slate-800">{activeStudents.length}</p>
+                <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-brand-green/65">Currently enrolled</p>
               </div>
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
-                    <GraduationCap size={18} />
+              <div className="bento-card p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-sm font-bold text-slate-500">Center</span>
+                    <p className="mt-3 text-3xl font-black tracking-tight text-brand-blue">{centerCount}</p>
                   </div>
-                  <span className="text-sm font-medium text-slate-500">Center</span>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-blue/10 text-brand-blue ring-1 ring-brand-blue/10">
+                    <GraduationCap size={20} />
+                  </div>
                 </div>
-                <p className="text-2xl font-bold text-slate-800">{centerCount}</p>
+                <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-brand-blue/65">Group program</p>
               </div>
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center">
-                    <Users size={18} />
+              <div className="bento-card p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-sm font-bold text-slate-500">One-on-One</span>
+                    <p className="mt-3 text-3xl font-black tracking-tight text-[#765300]">{oneOnOneCount}</p>
                   </div>
-                  <span className="text-sm font-medium text-slate-500">One-on-One</span>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-yellow/20 text-[#765300] ring-1 ring-brand-yellow/30">
+                    <Users size={20} />
+                  </div>
                 </div>
-                <p className="text-2xl font-bold text-slate-800">{oneOnOneCount}</p>
+                <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-[#765300]/65">Private tutoring</p>
               </div>
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center">
-                    <UserX size={18} />
+              <div className="bento-card p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-sm font-bold text-slate-500">Inactive</span>
+                    <p className="mt-3 text-3xl font-black tracking-tight text-slate-700">{inactiveCount}</p>
                   </div>
-                  <span className="text-sm font-medium text-slate-500">Inactive</span>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-slate-200">
+                    <UserX size={20} />
+                  </div>
                 </div>
-                <p className="text-2xl font-bold text-slate-800">{inactiveCount}</p>
+                <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Paused records</p>
               </div>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div>
-            <h2 className="text-xl font-bold text-slate-800 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Link to="/add-student" className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all group text-center">
-                <div className="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-brand-blue group-hover:text-white transition-colors">
-                  <UserPlus size={20} />
+            <div className="mb-4">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-blue/65">Shortcuts</p>
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-brand-ink">Quick Actions</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <Link to="/add-student" className="bento-card group p-5 focus-ring">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-blue/10 text-brand-blue ring-1 ring-brand-blue/10 transition-all group-hover:bg-brand-blue group-hover:text-white">
+                  <UserPlus size={22} />
                 </div>
-                <p className="text-sm font-semibold text-slate-700 group-hover:text-brand-blue transition-colors">Add Student</p>
+                <p className="text-base font-black text-slate-800 transition-colors group-hover:text-brand-blue">Add Student</p>
+                <p className="mt-2 text-sm font-medium text-slate-500">Create a new student profile.</p>
               </Link>
-              <Link to="/attendance" className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all group text-center">
-                <div className="w-10 h-10 bg-brand-green/10 text-brand-green rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-brand-green group-hover:text-white transition-colors">
-                  <CalendarCheck size={20} />
+              <Link to="/attendance" className="bento-card group p-5 focus-ring">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-green/10 text-brand-green ring-1 ring-brand-green/10 transition-all group-hover:bg-brand-green group-hover:text-white">
+                  <CalendarCheck size={22} />
                 </div>
-                <p className="text-sm font-semibold text-slate-700 group-hover:text-brand-green transition-colors">Mark Attendance</p>
+                <p className="text-base font-black text-slate-800 transition-colors group-hover:text-brand-green">Mark Attendance</p>
+                <p className="mt-2 text-sm font-medium text-slate-500">Update center attendance.</p>
               </Link>
-              <Link to="/tuition" className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all group text-center">
-                <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                  <CreditCard size={20} />
+              <Link to="/tuition" className="bento-card group p-5 focus-ring">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-yellow/20 text-[#765300] ring-1 ring-brand-yellow/30 transition-all group-hover:bg-brand-yellow group-hover:text-brand-blue">
+                  <CreditCard size={22} />
                 </div>
-                <p className="text-sm font-semibold text-slate-700 group-hover:text-orange-600 transition-colors">Manage Tuition</p>
+                <p className="text-base font-black text-slate-800 transition-colors group-hover:text-[#765300]">Manage Tuition</p>
+                <p className="mt-2 text-sm font-medium text-slate-500">Review payments and balances.</p>
               </Link>
-              <Link to="/students" className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all group text-center">
-                <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                  <Users size={20} />
+              <Link to="/students" className="bento-card group p-5 focus-ring">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-red/10 text-brand-red ring-1 ring-brand-red/10 transition-all group-hover:bg-brand-red group-hover:text-white">
+                  <Users size={22} />
                 </div>
-                <p className="text-sm font-semibold text-slate-700 group-hover:text-purple-600 transition-colors">View Students</p>
+                <p className="text-base font-black text-slate-800 transition-colors group-hover:text-brand-red">View Students</p>
+                <p className="mt-2 text-sm font-medium text-slate-500">Search and manage roster.</p>
               </Link>
             </div>
           </div>
 
           {/* Financial Summary */}
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-800">Financial Summary</h2>
-            <Link to="/tuition" className="text-sm font-medium text-brand-blue hover:text-blue-700 flex items-center gap-1 group">
-              Manage Tuition <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-blue/65">Revenue</p>
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-brand-ink">Financial Summary</h2>
+            </div>
+            <Link to="/tuition" className="btn-ghost group min-h-0 px-3 py-2">
+              Manage Tuition <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-blue-50 text-brand-blue rounded-xl flex items-center justify-center">
-                  <CreditCard size={20} />
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="summary-card p-6">
+              <div className="relative flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold text-slate-500">Total Expected Revenue</p>
+                  <p className="mt-3 text-3xl font-black tracking-tight text-brand-ink">${expectedTotal.toFixed(2)}</p>
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-blue/65">Projected this month</p>
                 </div>
-                <h3 className="font-semibold text-slate-700">Total Expected Revenue</h3>
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-blue/10 text-brand-blue ring-1 ring-brand-blue/10">
+                  <CreditCard size={22} />
+                </div>
               </div>
-              <p className="text-3xl font-bold text-slate-800">${expectedTotal.toFixed(2)}</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-brand-green/10 text-brand-green rounded-xl flex items-center justify-center">
-                  <DollarSign size={20} />
+            <div className="summary-card p-6">
+              <div className="relative flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold text-slate-500">Total Collected Revenue</p>
+                  <p className="mt-3 text-3xl font-black tracking-tight text-brand-green">${collectedTotal.toFixed(2)}</p>
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-green/65">Payments received</p>
                 </div>
-                <h3 className="font-semibold text-slate-700">Total Collected Revenue</h3>
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-green/10 text-brand-green ring-1 ring-brand-green/10">
+                  <DollarSign size={22} />
+                </div>
               </div>
-              <p className="text-3xl font-bold text-slate-800">${collectedTotal.toFixed(2)}</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center">
-                  <Clock size={20} />
+            <div className="summary-card p-6">
+              <div className="relative flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold text-slate-500">Total Remaining Balance</p>
+                  <p className="mt-3 text-3xl font-black tracking-tight text-brand-red">${remainingTotal > 0 ? remainingTotal.toFixed(2) : '0.00'}</p>
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-red/60">Outstanding balance</p>
                 </div>
-                <h3 className="font-semibold text-slate-700">Total Remaining Balance</h3>
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-yellow/20 text-[#765300] ring-1 ring-brand-yellow/30">
+                  <Clock size={22} />
+                </div>
               </div>
-              <p className="text-3xl font-bold text-slate-800">${remainingTotal > 0 ? remainingTotal.toFixed(2) : '0.00'}</p>
+            </div>
+
+            <div className="summary-card p-6">
+              <div className="relative flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold text-slate-500">1:1 Expected Profit</p>
+                  <p className="mt-3 text-3xl font-black tracking-tight text-brand-green">${oneOnOneExpectedProfit.toFixed(2)}</p>
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-green/65">After tutor pay</p>
+                </div>
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-green/10 text-brand-green ring-1 ring-brand-green/10">
+                  <DollarSign size={22} />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="glass-card flex items-center justify-between rounded-3xl border border-white/70 p-6 shadow-podium-soft">
               <div>
-                <p className="text-sm font-medium text-slate-500 mb-1">Paid Students</p>
+                <p className="mb-1 text-sm font-bold text-slate-500">Paid Students</p>
                 <div className="flex items-end gap-2">
-                  <span className="text-2xl font-bold text-slate-800">{paidStudentsCount}</span>
-                  <span className="text-sm font-medium text-slate-400 mb-1">/ {records.length}</span>
+                  <span className="text-3xl font-black tracking-tight text-brand-green">{paidStudentsCount}</span>
+                  <span className="mb-1 text-sm font-bold text-slate-400">/ {records.length}</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-brand-green/10 rounded-full flex items-center justify-center text-brand-green">
-                <Users size={24} />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-green/10 text-brand-green ring-1 ring-brand-green/10">
+                <Users size={22} />
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div className="glass-card flex items-center justify-between rounded-3xl border border-white/70 p-6 shadow-podium-soft">
               <div>
-                <p className="text-sm font-medium text-slate-500 mb-1">Unpaid / Partial</p>
+                <p className="mb-1 text-sm font-bold text-slate-500">Unpaid / Partial</p>
                 <div className="flex items-end gap-2">
-                  <span className="text-2xl font-bold text-slate-800">{unpaidPartialCount}</span>
-                  <span className="text-sm font-medium text-slate-400 mb-1">/ {records.length}</span>
+                  <span className="text-3xl font-black tracking-tight text-brand-red">{unpaidPartialCount}</span>
+                  <span className="mb-1 text-sm font-bold text-slate-400">/ {records.length}</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center text-red-600">
-                <Users size={24} />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-red/10 text-brand-red ring-1 ring-brand-red/10">
+                <Users size={22} />
               </div>
             </div>
           </div>
 
           {records.length === 0 && (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center mt-6">
-              <p className="text-blue-800 font-medium mb-3">No tuition records generated for this month yet.</p>
-              <Link to="/tuition" className="inline-block px-5 py-2 bg-brand-blue text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+            <div className="glass-card mt-6 rounded-4xl border border-white/70 p-7 text-center shadow-podium-glass">
+              <p className="mb-4 text-base font-bold text-brand-blue">No tuition records generated for this month yet.</p>
+              <Link to="/tuition" className="btn-primary">
                 Set up {displayMonth} Tuition
               </Link>
             </div>

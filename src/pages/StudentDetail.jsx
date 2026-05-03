@@ -6,8 +6,8 @@ import { ArrowLeft, Mail, Phone, BookOpen, Calendar, DollarSign, Loader2, User, 
 const DEFAULT_CENTER_CLASS = 'Unassigned';
 
 const ArrayInput = ({ label, field, type = "text", placeholder, formData, handleArrayChange, removeArrayItem, addArrayItem }) => (
-  <div className="space-y-3">
-    <label className="block text-sm font-semibold text-slate-700">{label}</label>
+  <div className="space-y-3 rounded-3xl border border-brand-blue/10 bg-white/60 p-4 shadow-sm">
+    <label className="block text-sm font-bold text-slate-700">{label}</label>
     {formData[field].map((item, index) => (
       <div key={index} className="flex gap-2 items-start">
         <input
@@ -15,13 +15,13 @@ const ArrayInput = ({ label, field, type = "text", placeholder, formData, handle
           value={item}
           onChange={(e) => handleArrayChange(field, index, e.target.value)}
           placeholder={placeholder}
-          className="flex-1 w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all"
+          className="input-field flex-1"
         />
         {formData[field].length > 1 && (
           <button
             type="button"
             onClick={() => removeArrayItem(field, index)}
-            className="p-2.5 text-slate-400 hover:text-brand-red hover:bg-red-50 rounded-xl transition-colors shrink-0"
+            className="focus-ring rounded-2xl p-2.5 text-slate-400 transition-colors hover:bg-brand-red/10 hover:text-brand-red shrink-0"
           >
             <Trash2 size={20} />
           </button>
@@ -31,10 +31,22 @@ const ArrayInput = ({ label, field, type = "text", placeholder, formData, handle
     <button
       type="button"
       onClick={() => addArrayItem(field)}
-      className="inline-flex items-center text-sm font-medium text-brand-blue hover:text-blue-700 transition-colors"
+      className="btn-ghost min-h-0 px-2 py-2"
     >
       <Plus size={16} className="mr-1" /> Add another
     </button>
+  </div>
+);
+
+const SectionHeading = ({ icon: Icon, title, eyebrow }) => (
+  <div className="mb-5 flex items-center gap-3">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-blue/10 text-brand-blue ring-1 ring-brand-blue/10">
+      <Icon size={19} strokeWidth={2.3} />
+    </div>
+    <div>
+      {eyebrow && <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-blue/60">{eyebrow}</p>}
+      <h3 className="text-lg font-black tracking-tight text-brand-ink">{title}</h3>
+    </div>
   </div>
 );
 
@@ -88,6 +100,8 @@ const StudentDetail = () => {
       parentPhones: student.parentPhones?.length ? student.parentPhones : [''],
       startDate: student.startDate ? student.startDate.split('T')[0] : '',
       expectedMonthlyTutoringHours: student.expectedMonthlyTutoringHours ?? '',
+      assignedTutorName: student.assignedTutorName || '',
+      tutorHourlyPay: student.tutorHourlyPay ?? '',
       centerClass: student.studentType === 'center' ? student.centerClass || DEFAULT_CENTER_CLASS : student.centerClass,
     });
     setStatus({ type: '', message: '' });
@@ -136,7 +150,11 @@ const StudentDetail = () => {
         parentEmails: formData.parentEmails.filter(Boolean),
         parentPhones: formData.parentPhones.filter(Boolean),
         monthlyTuition: Number(formData.monthlyTuition) || 0,
-        ...(formData.studentType === 'one-on-one' ? { expectedMonthlyTutoringHours: formData.expectedMonthlyTutoringHours === '' ? null : Number(formData.expectedMonthlyTutoringHours) || 0 } : {}),
+        ...(formData.studentType === 'one-on-one' ? {
+          expectedMonthlyTutoringHours: formData.expectedMonthlyTutoringHours === '' ? null : Number(formData.expectedMonthlyTutoringHours) || 0,
+          assignedTutorName: formData.assignedTutorName,
+          tutorHourlyPay: formData.tutorHourlyPay === '' ? null : Number(formData.tutorHourlyPay) || 0,
+        } : {}),
         centerClass: formData.studentType === 'center' ? formData.centerClass || DEFAULT_CENTER_CLASS : formData.centerClass,
       };
 
@@ -247,36 +265,37 @@ const StudentDetail = () => {
   }
 
   return (
-    <div className="space-y-6 pb-12 max-w-4xl mx-auto">
+    <div className="mx-auto max-w-6xl space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <Link to="/students" className="inline-flex items-center text-slate-500 hover:text-brand-blue transition-colors font-medium group">
+        <Link to="/students" className="btn-ghost group min-h-0 px-3 py-2">
           <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Students
         </Link>
         
         {status.message && !isEditing && (
-          <div className={`px-4 py-2 rounded-lg flex items-center font-medium ${status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          <div className={`flex items-center rounded-2xl border px-4 py-2 font-bold shadow-sm ${status.type === 'success' ? 'border-brand-green/20 bg-brand-green/10 text-brand-green' : 'border-brand-red/20 bg-brand-red/10 text-brand-red'}`}>
             {status.type === 'success' ? <CheckCircle size={18} className="mr-2" /> : <AlertCircle size={18} className="mr-2" />}
             {status.message}
           </div>
         )}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="glass-card overflow-hidden rounded-4xl border border-white/70 shadow-podium-glass">
         {/* Header */}
-        <div className="p-8 border-b border-slate-200 bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative flex flex-col justify-between gap-6 border-b border-brand-blue/10 p-6 md:flex-row md:items-center md:p-8">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-blue via-brand-yellow to-brand-green" />
           <div className="flex items-center gap-5">
-            <div className="w-20 h-20 bg-brand-blue text-white rounded-2xl flex items-center justify-center text-3xl font-bold shadow-sm">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-brand-blue to-blue-700 text-3xl font-black text-white shadow-podium-soft ring-4 ring-white/70">
               {student.firstName.charAt(0)}{student.lastName.charAt(0)}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+              <h1 className="text-3xl font-black tracking-tight text-brand-ink md:text-4xl">
                 {student.firstName} {student.lastName}
               </h1>
               <div className="flex items-center gap-3 mt-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${student.studentType === 'center' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700'}`}>
+                <span className={`rounded-full border px-3 py-1 text-xs font-black uppercase tracking-[0.14em] ${student.studentType === 'center' ? 'border-brand-blue/15 bg-brand-blue/10 text-brand-blue' : 'border-brand-green/15 bg-brand-green/10 text-brand-green'}`}>
                   {student.studentType === 'center' ? 'Center' : 'One-on-One'}
                 </span>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${student.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-700'}`}>
+                <span className={`rounded-full border px-3 py-1 text-xs font-black uppercase tracking-[0.14em] ${student.status === 'active' || !student.status ? 'border-brand-green/15 bg-brand-green/10 text-brand-green' : 'border-slate-200 bg-slate-100 text-slate-700'}`}>
                   {student.status || 'Active'}
                 </span>
               </div>
@@ -284,31 +303,31 @@ const StudentDetail = () => {
           </div>
           
           {!isEditing && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 md:justify-end">
               {student.status === 'inactive' ? (
                 <button
                   onClick={() => setShowRestoreModal(true)}
-                  className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 hover:text-brand-green transition-colors flex items-center gap-2 shadow-sm"
+                  className="btn-secondary text-brand-green"
                 >
                   <RefreshCcw size={18} /> Restore Student
                 </button>
               ) : (
                 <button
                   onClick={() => setShowArchiveModal(true)}
-                  className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-red-50 hover:text-brand-red hover:border-red-200 transition-colors flex items-center gap-2 shadow-sm"
+                  className="btn-secondary hover:text-brand-red"
                 >
                   <Archive size={18} /> Archive Student
                 </button>
               )}
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-red-50 hover:text-brand-red hover:border-red-200 transition-colors flex items-center gap-2 shadow-sm"
+                className="btn-secondary hover:text-brand-red"
               >
                 <Trash2 size={18} /> Delete Student
               </button>
               <button
                 onClick={handleEditClick}
-                className="px-5 py-2.5 bg-brand-blue text-white font-medium rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
+                className="btn-primary"
               >
                 <Edit size={18} /> Edit Profile
               </button>
@@ -318,49 +337,47 @@ const StudentDetail = () => {
 
         {/* Content */}
         {isEditing ? (
-          <form onSubmit={handleSave} className="p-8 space-y-10">
+          <form onSubmit={handleSave} className="grid grid-cols-1 gap-5 p-4 md:p-6 lg:grid-cols-12">
             {status.message && status.type === 'error' && (
-              <div className="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 font-medium flex items-center">
+              <div className="flex items-center rounded-3xl border border-brand-red/20 bg-brand-red/10 p-4 font-bold text-brand-red lg:col-span-12">
                 <AlertCircle className="w-5 h-5 mr-3 shrink-0" />
                 {status.message}
               </div>
             )}
             
-            <section>
-              <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-100 pb-2">
-                <User size={24} className="text-brand-blue" /> Personal Details
-              </h2>
+            <section className="bento-card p-5 md:p-6 lg:col-span-6">
+              <SectionHeading icon={User} eyebrow="Profile" title="Personal Details" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">First Name *</label>
-                  <input required type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" />
+                  <label className="block text-sm font-bold text-slate-700">First Name *</label>
+                  <input required type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="input-field" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Last Name *</label>
-                  <input required type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" />
+                  <label className="block text-sm font-bold text-slate-700">Last Name *</label>
+                  <input required type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="input-field" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Student Type</label>
-                  <div className="flex gap-4 p-1 bg-slate-50 border border-slate-200 rounded-xl">
-                    <label className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg cursor-pointer transition-colors ${formData.studentType === 'center' ? 'bg-white shadow-sm text-brand-blue font-semibold border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <label className="block text-sm font-bold text-slate-700">Student Type</label>
+                  <div className="grid grid-cols-2 gap-2 rounded-2xl border border-brand-blue/10 bg-white/65 p-1.5 shadow-sm">
+                    <label className={`flex cursor-pointer items-center justify-center rounded-xl px-3 py-2.5 text-sm font-black transition-all ${formData.studentType === 'center' ? 'bg-brand-blue text-white shadow-podium-soft' : 'text-slate-500 hover:bg-white hover:text-brand-blue'}`}>
                       <input type="radio" name="studentType" value="center" checked={formData.studentType === 'center'} onChange={handleInputChange} className="hidden" /> Center
                     </label>
-                    <label className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg cursor-pointer transition-colors ${formData.studentType === 'one-on-one' ? 'bg-white shadow-sm text-brand-blue font-semibold border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
+                    <label className={`flex cursor-pointer items-center justify-center rounded-xl px-3 py-2.5 text-sm font-black transition-all ${formData.studentType === 'one-on-one' ? 'bg-brand-blue text-white shadow-podium-soft' : 'text-slate-500 hover:bg-white hover:text-brand-blue'}`}>
                       <input type="radio" name="studentType" value="one-on-one" checked={formData.studentType === 'one-on-one'} onChange={handleInputChange} className="hidden" /> One-on-One
                     </label>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Status</label>
-                  <select name="status" value={formData.status} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none">
+                  <label className="block text-sm font-bold text-slate-700">Status</label>
+                  <select name="status" value={formData.status} onChange={handleInputChange} className="select-field">
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
                 {formData.studentType === 'center' && (
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700">Center Class</label>
-                    <select name="centerClass" value={formData.centerClass || DEFAULT_CENTER_CLASS} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none bg-white">
+                    <label className="block text-sm font-bold text-slate-700">Center Class</label>
+                    <select name="centerClass" value={formData.centerClass || DEFAULT_CENTER_CLASS} onChange={handleInputChange} className="select-field">
                       <option value="Unassigned">Unassigned</option>
                       <option value="Abir">Abir</option>
                       <option value="Rahat">Rahat</option>
@@ -370,48 +387,54 @@ const StudentDetail = () => {
               </div>
             </section>
 
-            <section>
-              <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-100 pb-2">
-                <BookOpen size={24} className="text-brand-blue" /> Academics & Enrollment
-              </h2>
+            <section className="bento-card p-5 md:p-6 lg:col-span-6">
+              <SectionHeading icon={BookOpen} eyebrow="Academic" title="Academics & Enrollment" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">School</label>
-                  <input type="text" name="school" value={formData.school} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" />
+                  <label className="block text-sm font-bold text-slate-700">School</label>
+                  <input type="text" name="school" value={formData.school} onChange={handleInputChange} className="input-field" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Grade</label>
-                  <input type="text" name="grade" value={formData.grade} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" />
+                  <label className="block text-sm font-bold text-slate-700">Grade</label>
+                  <input type="text" name="grade" value={formData.grade} onChange={handleInputChange} className="input-field" />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-700">Subjects <span className="text-slate-400 font-normal">(Comma separated)</span></label>
-                  <input type="text" name="subjects" value={formData.subjects} onChange={handleInputChange} placeholder="e.g. Math, English, SAT" className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" />
+                  <label className="block text-sm font-bold text-slate-700">Subjects <span className="text-slate-400 font-normal">(Comma separated)</span></label>
+                  <input type="text" name="subjects" value={formData.subjects} onChange={handleInputChange} placeholder="e.g. Math, English, SAT" className="input-field" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Start Date</label>
-                  <input type="date" name="startDate" value={formData.startDate} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" />
+                  <label className="block text-sm font-bold text-slate-700">Start Date</label>
+                  <input type="date" name="startDate" value={formData.startDate} onChange={handleInputChange} className="input-field" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700">Monthly Tuition ($)</label>
+                  <label className="block text-sm font-bold text-slate-700">Monthly Tuition ($)</label>
                   <div className="relative">
                     <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input type="number" name="monthlyTuition" value={formData.monthlyTuition} onChange={handleInputChange} min="0" step="0.01" className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" />
+                    <input type="number" name="monthlyTuition" value={formData.monthlyTuition} onChange={handleInputChange} min="0" step="0.01" className="input-field pl-10" />
                   </div>
                   <p className="text-xs text-slate-500 mt-1">Changes apply only to newly generated tuition records.</p>
                 </div>
                 {formData.studentType === 'one-on-one' && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700">Expected Monthly Tutoring Hours</label>
-                    <input type="number" name="expectedMonthlyTutoringHours" value={formData.expectedMonthlyTutoringHours} onChange={handleInputChange} min="0" step="0.25" className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" placeholder="e.g. 8.5" />
-                  </div>
+                  <>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-slate-700">Expected Monthly Tutoring Hours</label>
+                      <input type="number" name="expectedMonthlyTutoringHours" value={formData.expectedMonthlyTutoringHours} onChange={handleInputChange} min="0" step="0.25" className="input-field" placeholder="e.g. 8.5" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-slate-700">Assigned Tutor</label>
+                      <input type="text" name="assignedTutorName" value={formData.assignedTutorName} onChange={handleInputChange} className="input-field" placeholder="Tutor name" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-slate-700">Tutor Hourly Pay ($)</label>
+                      <input type="number" name="tutorHourlyPay" value={formData.tutorHourlyPay} onChange={handleInputChange} min="0" step="0.01" className="input-field" placeholder="0.00" />
+                    </div>
+                  </>
                 )}
               </div>
             </section>
 
-            <section>
-              <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-100 pb-2">
-                <Mail size={24} className="text-brand-blue" /> Contact Info
-              </h2>
+            <section className="bento-card p-5 md:p-6 lg:col-span-7">
+              <SectionHeading icon={Mail} eyebrow="Family" title="Contact Info" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-8">
                   <ArrayInput label="Student Email(s)" field="studentEmails" type="email" placeholder="student@email.com" formData={formData} handleArrayChange={handleArrayChange} removeArrayItem={removeArrayItem} addArrayItem={addArrayItem} />
@@ -423,50 +446,48 @@ const StudentDetail = () => {
               </div>
             </section>
 
-            <section>
-              <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-2">Notes</h2>
-              <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={4} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none resize-y" placeholder="Add any special instructions or notes here..."></textarea>
+            <section className="bento-card p-5 md:p-6 lg:col-span-5">
+              <SectionHeading icon={Edit} eyebrow="Context" title="Notes" />
+              <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={8} className="input-field resize-y" placeholder="Add any special instructions or notes here..."></textarea>
             </section>
 
-            <div className="flex gap-4 pt-4 border-t border-slate-100">
-              <button type="submit" disabled={saving} className="px-6 py-2.5 bg-brand-blue text-white font-medium rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+            <div className="flex flex-wrap gap-3 border-t border-brand-blue/10 pt-5 lg:col-span-12">
+              <button type="submit" disabled={saving} className="btn-primary disabled:cursor-not-allowed disabled:opacity-50">
                 {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                 Save Changes
               </button>
-              <button type="button" onClick={handleCancelEdit} disabled={saving} className="px-6 py-2.5 bg-white text-slate-600 border border-slate-200 font-medium rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors flex items-center gap-2">
+              <button type="button" onClick={handleCancelEdit} disabled={saving} className="btn-secondary disabled:cursor-not-allowed disabled:opacity-50">
                 <X size={18} /> Cancel
               </button>
             </div>
           </form>
         ) : (
-          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 gap-5 p-4 md:p-6 lg:grid-cols-12">
             {/* Left Column: Academics & Enrollment */}
-            <div className="space-y-8">
-              <section>
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <BookOpen size={20} className="text-brand-blue" /> Academic Info
-                </h3>
-                <div className="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-100">
+            <div className="space-y-5 lg:col-span-7">
+              <section className="bento-card p-5 md:p-6">
+                <SectionHeading icon={BookOpen} eyebrow="Academic" title="Academic Info" />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="text-sm text-slate-500 font-medium">School</p>
-                    <p className="text-slate-800 font-medium mt-0.5">{student.school || 'Not specified'}</p>
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">School</p>
+                    <p className="mt-1 font-bold text-slate-800">{student.school || 'Not specified'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 font-medium">Grade</p>
-                    <p className="text-slate-800 font-medium mt-0.5">{student.grade || 'Not specified'}</p>
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Grade</p>
+                    <p className="mt-1 font-bold text-slate-800">{student.grade || 'Not specified'}</p>
                   </div>
                   {student.studentType === 'center' && (
                     <div>
-                      <p className="text-sm text-slate-500 font-medium">Center Class</p>
-                      <p className="text-slate-800 font-medium mt-0.5">{student.centerClass || DEFAULT_CENTER_CLASS}</p>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Center Class</p>
+                      <p className="mt-1 font-bold text-slate-800">{student.centerClass || DEFAULT_CENTER_CLASS}</p>
                     </div>
                   )}
-                  <div>
-                    <p className="text-sm text-slate-500 font-medium">Subjects</p>
+                  <div className="sm:col-span-2">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Subjects</p>
                     <div className="flex flex-wrap gap-2 mt-1.5">
                       {student.subjects?.length > 0 ? (
                         student.subjects.map((sub, i) => (
-                          <span key={i} className="bg-white border border-slate-200 px-2.5 py-1 rounded-md text-sm text-slate-700 shadow-sm">{sub}</span>
+                          <span key={i} className="rounded-full border border-brand-blue/10 bg-white/75 px-3 py-1 text-sm font-bold text-slate-700 shadow-sm">{sub}</span>
                         ))
                       ) : (
                         <span className="text-slate-500 italic text-sm">None listed</span>
@@ -476,28 +497,40 @@ const StudentDetail = () => {
                 </div>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <Calendar size={20} className="text-brand-blue" /> Enrollment Details
-                </h3>
-                <div className="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-100">
+              <section className="bento-card p-5 md:p-6">
+                <SectionHeading icon={Calendar} eyebrow="Program" title="Enrollment Details" />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div>
-                    <p className="text-sm text-slate-500 font-medium">Start Date</p>
-                    <p className="text-slate-800 font-medium mt-0.5">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Start Date</p>
+                    <p className="mt-1 font-bold text-slate-800">
                       {student.startDate ? new Date(student.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }) : 'Unknown'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 font-medium">Monthly Tuition</p>
-                    <p className="text-slate-800 font-medium mt-0.5 flex items-center">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Monthly Tuition</p>
+                    <p className="mt-1 flex items-center font-bold text-slate-800">
                       <DollarSign size={16} className="text-slate-400 mr-1" />
                       {student.monthlyTuition || '0'}
                     </p>
                   </div>
                   {student.studentType === 'one-on-one' && (
                     <div>
-                      <p className="text-sm text-slate-500 font-medium">Expected Monthly Tutoring Hours</p>
-                      <p className="text-slate-800 font-medium mt-0.5">{student.expectedMonthlyTutoringHours ?? 'Not specified'}</p>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Expected Monthly Tutoring Hours</p>
+                      <p className="mt-1 font-bold text-slate-800">{student.expectedMonthlyTutoringHours ?? 'Not specified'}</p>
+                    </div>
+                  )}
+                  {student.studentType === 'one-on-one' && (
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Assigned Tutor</p>
+                      <p className="mt-1 font-bold text-slate-800">{student.assignedTutorName || 'Not specified'}</p>
+                    </div>
+                  )}
+                  {student.studentType === 'one-on-one' && (
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">Tutor Hourly Pay</p>
+                      <p className="mt-1 font-bold text-slate-800">
+                        {student.tutorHourlyPay ? `$${Number(student.tutorHourlyPay).toFixed(2)}/hr` : 'Not specified'}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -505,19 +538,17 @@ const StudentDetail = () => {
             </div>
 
             {/* Right Column: Contact & Notes */}
-            <div className="space-y-8">
-              <section>
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <User size={20} className="text-brand-blue" /> Contact Information
-                </h3>
-                <div className="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-100">
+            <div className="space-y-5 lg:col-span-5">
+              <section className="bento-card p-5 md:p-6">
+                <SectionHeading icon={User} eyebrow="Family" title="Contact Information" />
+                <div className="space-y-4">
                   
                   <div>
-                    <p className="text-sm text-slate-500 font-medium mb-1.5">Student Email(s)</p>
+                    <p className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-slate-400">Student Email(s)</p>
                     {student.studentEmails?.length > 0 ? (
                       <ul className="space-y-1.5">
                         {student.studentEmails.map((email, i) => (
-                          <li key={i} className="flex items-center text-slate-800 text-sm">
+                          <li key={i} className="flex items-center rounded-2xl bg-white/60 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm">
                             <Mail size={14} className="mr-2 text-brand-blue" />
                             <a href={`mailto:${email}`} className="hover:text-brand-blue transition-colors">{email}</a>
                           </li>
@@ -528,12 +559,12 @@ const StudentDetail = () => {
                     )}
                   </div>
 
-                  <div className="border-t border-slate-200 pt-4">
-                    <p className="text-sm text-slate-500 font-medium mb-1.5">Parent Email(s)</p>
+                  <div className="border-t border-brand-blue/10 pt-4">
+                    <p className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-slate-400">Parent Email(s)</p>
                     {student.parentEmails?.length > 0 ? (
                       <ul className="space-y-1.5">
                         {student.parentEmails.map((email, i) => (
-                          <li key={i} className="flex items-center text-slate-800 text-sm">
+                          <li key={i} className="flex items-center rounded-2xl bg-white/60 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm">
                             <Mail size={14} className="mr-2 text-brand-blue" />
                             <a href={`mailto:${email}`} className="hover:text-brand-blue transition-colors">{email}</a>
                           </li>
@@ -544,12 +575,12 @@ const StudentDetail = () => {
                     )}
                   </div>
 
-                  <div className="border-t border-slate-200 pt-4">
-                    <p className="text-sm text-slate-500 font-medium mb-1.5">Parent Phone(s)</p>
+                  <div className="border-t border-brand-blue/10 pt-4">
+                    <p className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-slate-400">Parent Phone(s)</p>
                     {student.parentPhones?.length > 0 ? (
                       <ul className="space-y-1.5">
                         {student.parentPhones.map((phone, i) => (
-                          <li key={i} className="flex items-center text-slate-800 text-sm">
+                          <li key={i} className="flex items-center rounded-2xl bg-white/60 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm">
                             <Phone size={14} className="mr-2 text-brand-blue" />
                             <a href={`tel:${phone}`} className="hover:text-brand-blue transition-colors">{phone}</a>
                           </li>
@@ -562,9 +593,9 @@ const StudentDetail = () => {
                 </div>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-slate-800 mb-4">Notes</h3>
-                <div className="bg-yellow-50 p-5 rounded-xl border border-yellow-100 min-h-[120px]">
+              <section className="bento-card p-5 md:p-6">
+                <SectionHeading icon={Edit} eyebrow="Context" title="Notes" />
+                <div className="min-h-[140px] rounded-3xl border border-brand-yellow/35 bg-brand-yellow/10 p-5">
                   {student.notes ? (
                     <p className="text-slate-700 whitespace-pre-wrap text-sm leading-relaxed">{student.notes}</p>
                   ) : (
@@ -581,12 +612,12 @@ const StudentDetail = () => {
       {/* Archive Modal */}
       {showArchiveModal && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-red-50/50">
-              <h3 className="text-xl font-bold text-red-700 flex items-center gap-2">
+          <div className="glass-card w-full max-w-md overflow-hidden rounded-4xl border border-white/70 shadow-podium-glass">
+            <div className="flex items-center justify-between border-b border-brand-red/10 bg-brand-red/10 p-6">
+              <h3 className="flex items-center gap-2 text-xl font-black text-brand-red">
                 <AlertCircle size={20} /> Archive Student
               </h3>
-              <button onClick={() => setShowArchiveModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setShowArchiveModal(false)} className="focus-ring rounded-full p-2 text-slate-400 hover:bg-white/70 hover:text-slate-600">
                 <X size={20} />
               </button>
             </div>
@@ -595,27 +626,27 @@ const StudentDetail = () => {
                 Archiving <strong>{student.firstName} {student.lastName}</strong> will hide them from Attendance and future Tuition runs. Their historical records will remain intact.
               </p>
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">Reason (Optional)</label>
+                <label className="block text-sm font-bold text-slate-700">Reason (Optional)</label>
                 <textarea
                   value={archiveReason}
                   onChange={(e) => setArchiveReason(e.target.value)}
                   placeholder="e.g. Graduated, Moved away..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none resize-none"
+                  className="input-field resize-none focus:border-brand-red"
                 />
               </div>
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowArchiveModal(false)}
-                  className="flex-1 px-4 py-2 bg-white text-slate-700 border border-slate-200 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                  className="btn-secondary flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={archiving}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-red px-4 py-2.5 font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
                 >
                   {archiving ? <Loader2 size={18} className="animate-spin" /> : <Archive size={18} />}
                   Archive
@@ -629,12 +660,12 @@ const StudentDetail = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-red-600">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+          <div className="glass-card w-full max-w-md overflow-hidden rounded-4xl border border-white/70 shadow-podium-glass">
+            <div className="flex items-center justify-between border-b border-brand-red/20 bg-brand-red p-6">
+              <h3 className="flex items-center gap-2 text-xl font-black text-white">
                 <AlertCircle size={20} /> Permanent Delete
               </h3>
-              <button onClick={() => setShowDeleteModal(false)} className="text-white/80 hover:text-white">
+              <button onClick={() => setShowDeleteModal(false)} className="focus-ring rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white">
                 <X size={20} />
               </button>
             </div>
@@ -649,14 +680,14 @@ const StudentDetail = () => {
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(false)}
-                  className="flex-1 px-4 py-2 bg-white text-slate-700 border border-slate-200 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                  className="btn-secondary flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-red px-4 py-2.5 font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
                 >
                   {deleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
                   Delete
@@ -669,12 +700,12 @@ const StudentDetail = () => {
       {/* Restore Confirmation Modal */}
       {showRestoreModal && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-green-50">
-              <h3 className="text-xl font-bold text-green-700 flex items-center gap-2">
+          <div className="glass-card w-full max-w-md overflow-hidden rounded-4xl border border-white/70 shadow-podium-glass">
+            <div className="flex items-center justify-between border-b border-brand-green/10 bg-brand-green/10 p-6">
+              <h3 className="flex items-center gap-2 text-xl font-black text-brand-green">
                 <CheckCircle size={20} /> Restore Student
               </h3>
-              <button onClick={() => setShowRestoreModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setShowRestoreModal(false)} className="focus-ring rounded-full p-2 text-slate-400 hover:bg-white/70 hover:text-slate-600">
                 <X size={20} />
               </button>
             </div>
@@ -689,14 +720,14 @@ const StudentDetail = () => {
                 <button
                   type="button"
                   onClick={() => setShowRestoreModal(false)}
-                  className="flex-1 px-4 py-2 bg-white text-slate-700 border border-slate-200 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                  className="btn-secondary flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleRestore}
                   disabled={archiving}
-                  className="flex-1 px-4 py-2 bg-brand-green text-white font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-green px-4 py-2.5 font-bold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
                 >
                   {archiving ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
                   Restore
