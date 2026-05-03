@@ -1,4 +1,3 @@
-import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { Home, UserPlus, Users, CalendarCheck, LogOut, CreditCard, Target, ClipboardList } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';

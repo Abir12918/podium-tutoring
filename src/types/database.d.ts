@@ -15,6 +15,7 @@ export interface Student {
   studentType: 'center' | 'online';
   centerClass?: 'Abir' | 'Rahat' | 'Unassigned';
   tuitionRate: number;
+  expectedMonthlyTutoringHours?: number | null;
   startDate: string;
   isActive: boolean;
   centerLocation?: string;
@@ -39,8 +40,13 @@ export interface TuitionRecord {
   id?: string;
   studentId: string;
   studentName: string;
-  studentType: 'center' | 'online';
+  studentType: 'center' | 'one-on-one';
+  tuitionType: 'monthly' | 'hourly';
   expectedAmount: number;
+  expectedTutoringHours?: number | null;
+  completedTutoringHours?: number | null;
+  hourlyRate?: number | null;
+  earnedAmount?: number | null;
   paidAmount: number;
   paymentStatus: 'unpaid' | 'partial' | 'paid';
   paymentDate?: string; // YYYY-MM-DD

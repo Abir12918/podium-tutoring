@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getStudentById, updateStudent, deleteStudent } from '../services/studentService';
 import { ArrowLeft, Mail, Phone, BookOpen, Calendar, DollarSign, Loader2, User, Edit, Save, X, Trash2, Plus, CheckCircle, AlertCircle, Archive, RefreshCcw } from 'lucide-react';
@@ -70,6 +70,7 @@ const StudentDetail = () => {
           setError('Student not found.');
         }
       } catch (err) {
+        console.error("Failed to load student details", err);
         setError('Failed to load student details.');
       } finally {
         setLoading(false);
@@ -86,6 +87,7 @@ const StudentDetail = () => {
       parentEmails: student.parentEmails?.length ? student.parentEmails : [''],
       parentPhones: student.parentPhones?.length ? student.parentPhones : [''],
       startDate: student.startDate ? student.startDate.split('T')[0] : '',
+      expectedMonthlyTutoringHours: student.expectedMonthlyTutoringHours ?? '',
       centerClass: student.studentType === 'center' ? student.centerClass || DEFAULT_CENTER_CLASS : student.centerClass,
     });
     setStatus({ type: '', message: '' });
@@ -134,6 +136,7 @@ const StudentDetail = () => {
         parentEmails: formData.parentEmails.filter(Boolean),
         parentPhones: formData.parentPhones.filter(Boolean),
         monthlyTuition: Number(formData.monthlyTuition) || 0,
+        ...(formData.studentType === 'one-on-one' ? { expectedMonthlyTutoringHours: formData.expectedMonthlyTutoringHours === '' ? null : Number(formData.expectedMonthlyTutoringHours) || 0 } : {}),
         centerClass: formData.studentType === 'center' ? formData.centerClass || DEFAULT_CENTER_CLASS : formData.centerClass,
       };
 
@@ -396,6 +399,12 @@ const StudentDetail = () => {
                   </div>
                   <p className="text-xs text-slate-500 mt-1">Changes apply only to newly generated tuition records.</p>
                 </div>
+                {formData.studentType === 'one-on-one' && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-slate-700">Expected Monthly Tutoring Hours</label>
+                    <input type="number" name="expectedMonthlyTutoringHours" value={formData.expectedMonthlyTutoringHours} onChange={handleInputChange} min="0" step="0.25" className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none" placeholder="e.g. 8.5" />
+                  </div>
+                )}
               </div>
             </section>
 
@@ -485,6 +494,12 @@ const StudentDetail = () => {
                       {student.monthlyTuition || '0'}
                     </p>
                   </div>
+                  {student.studentType === 'one-on-one' && (
+                    <div>
+                      <p className="text-sm text-slate-500 font-medium">Expected Monthly Tutoring Hours</p>
+                      <p className="text-slate-800 font-medium mt-0.5">{student.expectedMonthlyTutoringHours ?? 'Not specified'}</p>
+                    </div>
+                  )}
                 </div>
               </section>
             </div>

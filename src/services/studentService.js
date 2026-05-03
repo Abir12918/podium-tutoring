@@ -1,7 +1,16 @@
-import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where, Timestamp, deleteField } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 
 const STUDENTS_COLLECTION = 'students';
+
+const normalizeOptionalNumber = (value) => {
+  if (value === '' || value === null || value === undefined) {
+    return null;
+  }
+
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
 
 /**
  * Adds a new student to the Firestore database.
@@ -17,6 +26,7 @@ const STUDENTS_COLLECTION = 'students';
  * @param {string[]} studentData.parentPhones
  * @param {string} studentData.startDate
  * @param {number} studentData.monthlyTuition
+ * @param {number|null} studentData.expectedMonthlyTutoringHours
  * @param {string} studentData.studentType - "center" or "one-on-one"
  * @param {string} studentData.centerClass - "Abir", "Rahat", or "Unassigned"
  * @param {string} studentData.notes
@@ -38,6 +48,7 @@ export const addStudent = async (studentData) => {
       monthlyTuition: studentData.monthlyTuition || 0,
       studentType,
       ...(studentType === 'center' ? { centerClass: studentData.centerClass || 'Unassigned' } : {}),
+      ...(studentType === 'one-on-one' ? { expectedMonthlyTutoringHours: normalizeOptionalNumber(studentData.expectedMonthlyTutoringHours) } : {}),
       notes: studentData.notes || '',
       status: studentData.status || 'active',
       createdAt: Timestamp.now(),
@@ -127,10 +138,17 @@ export const getStudentById = async (studentId) => {
 export const updateStudent = async (studentId, updateData) => {
   try {
     const docRef = doc(db, STUDENTS_COLLECTION, studentId);
+    const dataToNormalize = { ...updateData };
+
+    if (dataToNormalize.studentType === 'one-on-one') {
+      dataToNormalize.expectedMonthlyTutoringHours = normalizeOptionalNumber(dataToNormalize.expectedMonthlyTutoringHours);
+    } else if (dataToNormalize.studentType === 'center') {
+      dataToNormalize.expectedMonthlyTutoringHours = deleteField();
+    }
     
     // We update updatedAt timestamp
     const dataToUpdate = {
-      ...updateData,
+      ...dataToNormalize,
       updatedAt: Timestamp.now()
     };
     

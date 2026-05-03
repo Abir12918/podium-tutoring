@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getCenterStudents } from '../services/studentService';
 import { getAttendanceForMonth, saveAttendanceRecord } from '../services/attendanceService';
 import { getWeekendDatesForMonth, isFutureDate } from '../utils/dateUtils';

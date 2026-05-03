@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getTuitionRecordsForMonth } from '../services/tuitionService';
 import { getStudents } from '../services/studentService';
@@ -155,7 +155,7 @@ const Home = () => {
                 <div className="w-10 h-10 bg-blue-50 text-brand-blue rounded-xl flex items-center justify-center">
                   <CreditCard size={20} />
                 </div>
-                <h3 className="font-semibold text-slate-700">Expected Revenue</h3>
+                <h3 className="font-semibold text-slate-700">Total Expected Revenue</h3>
               </div>
               <p className="text-3xl font-bold text-slate-800">${expectedTotal.toFixed(2)}</p>
             </div>
@@ -165,7 +165,7 @@ const Home = () => {
                 <div className="w-10 h-10 bg-brand-green/10 text-brand-green rounded-xl flex items-center justify-center">
                   <DollarSign size={20} />
                 </div>
-                <h3 className="font-semibold text-slate-700">Collected Revenue</h3>
+                <h3 className="font-semibold text-slate-700">Total Collected Revenue</h3>
               </div>
               <p className="text-3xl font-bold text-slate-800">${collectedTotal.toFixed(2)}</p>
             </div>
@@ -175,7 +175,7 @@ const Home = () => {
                 <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center">
                   <Clock size={20} />
                 </div>
-                <h3 className="font-semibold text-slate-700">Remaining Balance</h3>
+                <h3 className="font-semibold text-slate-700">Total Remaining Balance</h3>
               </div>
               <p className="text-3xl font-bold text-slate-800">${remainingTotal > 0 ? remainingTotal.toFixed(2) : '0.00'}</p>
             </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, ClipboardList, Eye, Flame, Loader2, MessageSquarePlus, Plus, Save, Search, Target, TrendingUp, UserCheck, X } from 'lucide-react';
 import { addLead, addLeadActivity, getLeads, updateLead } from '../services/leadService';
 import {

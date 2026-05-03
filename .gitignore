@@ -70,3 +70,6 @@ skills-lock.json
 # Ignore Firebase temporary or configuration files
 firebase-hosting*
 .firebase*
+scripts/deleteTuitionRecordsForNames.mjs
+scripts/bulkAddCenterStudents.mjs
+.npm-cache/

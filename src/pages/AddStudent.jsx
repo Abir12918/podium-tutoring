@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { addStudent } from '../services/studentService';
 import { Plus, Trash2, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -15,6 +15,7 @@ const initialFormState = {
   parentPhones: [''],
   startDate: new Date().toISOString().split('T')[0],
   monthlyTuition: '',
+  expectedMonthlyTutoringHours: '',
   studentType: 'center',
   centerClass: DEFAULT_CENTER_CLASS,
   notes: '',
@@ -99,6 +100,7 @@ const AddStudent = () => {
         parentEmails: formData.parentEmails.filter(Boolean),
         parentPhones: formData.parentPhones.filter(Boolean),
         monthlyTuition: Number(formData.monthlyTuition) || 0,
+        ...(formData.studentType === 'one-on-one' ? { expectedMonthlyTutoringHours: formData.expectedMonthlyTutoringHours === '' ? null : Number(formData.expectedMonthlyTutoringHours) || 0 } : {}),
         centerClass: formData.studentType === 'center' ? formData.centerClass || DEFAULT_CENTER_CLASS : undefined,
       };
 
@@ -217,6 +219,12 @@ const AddStudent = () => {
                   <option value="Abir">Abir</option>
                   <option value="Rahat">Rahat</option>
                 </select>
+              </div>
+            )}
+            {formData.studentType === 'one-on-one' && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700">Expected Monthly Tutoring Hours</label>
+                <input name="expectedMonthlyTutoringHours" value={formData.expectedMonthlyTutoringHours} onChange={handleChange} type="number" min="0" step="0.25" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" placeholder="e.g. 8.5" />
               </div>
             )}
             <div className="space-y-2">

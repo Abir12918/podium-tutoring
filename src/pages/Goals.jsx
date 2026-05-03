@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, CalendarDays, CheckCircle2, Clock, Edit3, Flag, Loader2, Plus, Save, Target, TrendingUp, UserRound, X } from 'lucide-react';
 import { addGoal, getGoalsByQuarter, updateGoal } from '../services/goalService';
 import { calculateGoalSummary, getCurrentQuarter, getQuarterFromDate, getTimeRemaining } from '../utils/goalUtils';
@@ -176,8 +176,7 @@ const createEmptyForm = (year, quarter) => ({
 
 const Goals = () => {
   const { currentUser } = useAuth();
-  const currentDate = new Date();
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
   const [selectedQuarter, setSelectedQuarter] = useState(getCurrentQuarter());
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -185,7 +184,7 @@ const Goals = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [modalMode, setModalMode] = useState(null);
   const [editingGoal, setEditingGoal] = useState(null);
-  const [formData, setFormData] = useState(createEmptyForm(currentDate.getFullYear(), getCurrentQuarter()));
+  const [formData, setFormData] = useState(() => createEmptyForm(new Date().getFullYear(), getCurrentQuarter()));
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [manualQuarter, setManualQuarter] = useState(false);
@@ -193,10 +192,10 @@ const Goals = () => {
   const [timerTick, setTimerTick] = useState(Date.now());
 
   const yearOptions = useMemo(() => {
-    const currentYear = currentDate.getFullYear();
+    const currentYear = new Date().getFullYear();
     const optionSet = new Set([currentYear - 1, currentYear, currentYear + 1, currentYear + 2, selectedYear, Number(formData.year)]);
     return Array.from(optionSet).filter(Number.isInteger).sort((a, b) => a - b);
-  }, [currentDate, formData.year, selectedYear]);
+  }, [formData.year, selectedYear]);
 
   const summary = useMemo(() => calculateGoalSummary(goals), [goals]);
 

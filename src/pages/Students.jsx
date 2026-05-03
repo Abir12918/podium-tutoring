@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getStudents } from '../services/studentService';
-import { Users, Filter, Mail, Phone, RefreshCw, Search, X } from 'lucide-react';
+import { Users, Mail, Phone, RefreshCw, Search, X } from 'lucide-react';
 
 const DEFAULT_CENTER_CLASS = 'Unassigned';
 
@@ -25,6 +25,7 @@ const Students = () => {
       });
       setStudents(data);
     } catch (err) {
+      console.error("Failed to load students", err);
       setError('Failed to load students. Please try again.');
     } finally {
       setLoading(false);

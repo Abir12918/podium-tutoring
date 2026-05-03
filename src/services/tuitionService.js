@@ -4,6 +4,52 @@ import { getStudents } from './studentService';
 
 const TUITION_COLLECTION = 'tuitionRecords';
 
+const normalizeOptionalNumber = (value) => {
+  if (value === '' || value === null || value === undefined) {
+    return null;
+  }
+
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
+export const calculateHourlyRate = (expectedAmount, expectedTutoringHours) => {
+  const amount = Number(expectedAmount) || 0;
+  const hours = normalizeOptionalNumber(expectedTutoringHours);
+
+  if (!hours || hours <= 0) {
+    return null;
+  }
+
+  return amount / hours;
+};
+
+export const calculateEarnedAmount = (completedTutoringHours, hourlyRate) => {
+  const completedHours = normalizeOptionalNumber(completedTutoringHours);
+  const rate = normalizeOptionalNumber(hourlyRate);
+
+  if (completedHours === null || rate === null) {
+    return null;
+  }
+
+  return completedHours * rate;
+};
+
+export const calculatePaymentStatus = (paidAmount, expectedAmount) => {
+  const paid = Number(paidAmount) || 0;
+  const expected = Number(expectedAmount) || 0;
+
+  if (paid <= 0) {
+    return 'unpaid';
+  }
+
+  if (paid >= expected) {
+    return 'paid';
+  }
+
+  return 'partial';
+};
+
 /**
  * Retrieves all tuition records for a specific month.
  * @param {string} monthKey - YYYY-MM format
@@ -34,20 +80,36 @@ export const saveTuitionRecord = async (record) => {
   try {
     const docId = `${record.studentId}_${record.monthKey}`;
     const docRef = doc(db, TUITION_COLLECTION, docId);
+    const studentType = record.studentType || 'center';
+    const tuitionType = record.tuitionType || (studentType === 'one-on-one' ? 'hourly' : 'monthly');
+    const expectedAmount = Number(record.expectedAmount) || 0;
+    const paidAmount = Number(record.paidAmount) || 0;
+    const expectedTutoringHours = normalizeOptionalNumber(record.expectedTutoringHours);
+    const completedTutoringHours = normalizeOptionalNumber(record.completedTutoringHours);
+    const hourlyRate = calculateHourlyRate(expectedAmount, expectedTutoringHours);
+    const earnedAmount = calculateEarnedAmount(completedTutoringHours, hourlyRate);
 
     const tuitionData = {
       studentId: record.studentId,
       studentName: record.studentName,
-      studentType: record.studentType,
+      studentType,
+      tuitionType,
       monthKey: record.monthKey,
-      expectedAmount: Number(record.expectedAmount) || 0,
-      paidAmount: Number(record.paidAmount) || 0,
-      paymentStatus: record.paymentStatus || 'unpaid',
+      expectedAmount,
+      paidAmount,
+      paymentStatus: calculatePaymentStatus(paidAmount, expectedAmount),
       paymentDate: record.paymentDate || '',
       paymentMethod: record.paymentMethod || '',
       note: record.note || '',
       updatedAt: Timestamp.now(),
     };
+
+    if (tuitionType === 'hourly') {
+      tuitionData.expectedTutoringHours = expectedTutoringHours;
+      tuitionData.completedTutoringHours = completedTutoringHours;
+      tuitionData.hourlyRate = hourlyRate;
+      tuitionData.earnedAmount = earnedAmount;
+    }
 
     // Use setDoc with merge to preserve createdAt on existing documents
     await setDoc(docRef, {
@@ -63,15 +125,19 @@ export const saveTuitionRecord = async (record) => {
 };
 
 /**
- * Generates initial tuition records for all active students for a given month.
+ * Generates initial tuition records for active students for a given month.
  * Skips students that already have a record for this month.
  * @param {string} monthKey - YYYY-MM format
+ * @param {'center'|'one-on-one'} [targetStudentType]
  */
-export const generateTuitionRecordsForMonth = async (monthKey) => {
+export const generateTuitionRecordsForMonth = async (monthKey, targetStudentType) => {
   try {
     // 1. Fetch all students and filter for active ones
     const allStudents = await getStudents();
-    const activeStudents = allStudents.filter(student => student.status === 'active');
+    const activeStudents = allStudents.filter(student => (
+      student.status === 'active'
+      && (!targetStudentType || student.studentType === targetStudentType)
+    ));
 
     // 2. Fetch existing records for this month to avoid duplicates
     const existingRecords = await getTuitionRecordsForMonth(monthKey);
@@ -83,12 +149,16 @@ export const generateTuitionRecordsForMonth = async (monthKey) => {
     // We use Promise.all to map over the active students and create records simultaneously
     const promises = activeStudents.map(async (student) => {
       if (!existingIds.has(student.id)) {
+        const studentType = student.studentType || 'center';
+        const tuitionType = studentType === 'one-on-one' ? 'hourly' : 'monthly';
         const newRecord = {
           studentId: student.id,
           studentName: `${student.firstName} ${student.lastName}`,
-          studentType: student.studentType || 'center',
+          studentType,
+          tuitionType,
           monthKey: monthKey,
           expectedAmount: Number(student.monthlyTuition) || 0,
+          ...(studentType === 'one-on-one' ? { expectedTutoringHours: normalizeOptionalNumber(student.expectedMonthlyTutoringHours) } : {}),
           paidAmount: 0,
           paymentStatus: 'unpaid',
           paymentDate: '',
