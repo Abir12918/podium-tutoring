@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, UserPlus, Users, CalendarCheck, LogOut, CreditCard } from 'lucide-react';
+import { Home, UserPlus, Users, CalendarCheck, LogOut, CreditCard, Target } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { logoutUser } from '../firebase/firebaseConfig';
 
@@ -48,6 +48,7 @@ const Layout = () => {
           <SidebarLink to="/students" icon={Users}>Students</SidebarLink>
           <SidebarLink to="/attendance" icon={CalendarCheck}>Attendance</SidebarLink>
           <SidebarLink to="/tuition" icon={CreditCard}>Tuition</SidebarLink>
+          <SidebarLink to="/goals" icon={Target}>Goals</SidebarLink>
         </nav>
 
         <div className="p-4 border-t border-slate-100">

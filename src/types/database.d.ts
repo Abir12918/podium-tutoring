@@ -48,3 +48,21 @@ export interface TuitionRecord {
   monthKey: string; // YYYY-MM
   updatedAt?: any;
 }
+
+export interface Goal {
+  id?: string;
+  goalDescription: string;
+  quarter: 'Q1' | 'Q2' | 'Q3' | 'Q4';
+  year: number;
+  owner: 'Abir' | 'Rahat' | 'Both';
+  priority: 'P0' | 'P1' | 'P2';
+  progress: number;
+  startDate: string;
+  endDate: string;
+  status: 'Not Started' | 'In Progress' | 'Done' | 'Blocked';
+  notes: string;
+  createdAt?: any;
+  updatedAt?: any;
+  createdBy: string;
+  updatedBy: string;
+}

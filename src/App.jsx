@@ -10,6 +10,7 @@ import Students from './pages/Students';
 import StudentDetail from './pages/StudentDetail';
 import Attendance from './pages/Attendance';
 import Tuition from './pages/Tuition';
+import Goals from './pages/Goals';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="/students/:studentId" element={<StudentDetail />} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/tuition" element={<Tuition />} />
+            <Route path="/goals" element={<Goals />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
