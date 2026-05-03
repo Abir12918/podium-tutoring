@@ -4,6 +4,8 @@ import { getAttendanceForMonth, saveAttendanceRecord } from '../services/attenda
 import { getWeekendDatesForMonth, isFutureDate } from '../utils/dateUtils';
 import { ChevronLeft, ChevronRight, Check, X, Loader2, MessageSquare, AlertCircle, CheckCircle2 } from 'lucide-react';
 
+const DEFAULT_CENTER_CLASS = 'Unassigned';
+
 const Attendance = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [students, setStudents] = useState([]);
@@ -235,7 +237,8 @@ const Attendance = () => {
                   {students.map(student => (
                     <tr key={student.id} className="hover:bg-slate-50 transition-colors group">
                       <td className="py-4 px-6 font-medium text-slate-800 sticky left-0 bg-white z-10 shadow-[1px_0_0_0_#f1f5f9] group-hover:bg-slate-50 transition-colors">
-                        {student.firstName} {student.lastName}
+                        <div>{student.firstName} {student.lastName}</div>
+                        <div className="text-xs text-slate-500 font-normal mt-1">Class: {student.centerClass || DEFAULT_CENTER_CLASS}</div>
                       </td>
                       {weekendDates.map(dateStr => {
                         const cellId = `${student.id}_${dateStr}`;

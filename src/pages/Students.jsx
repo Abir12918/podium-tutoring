@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { getStudents } from '../services/studentService';
 import { Users, Filter, Mail, Phone, RefreshCw, Search, X } from 'lucide-react';
 
+const DEFAULT_CENTER_CLASS = 'Unassigned';
+
 const Students = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -185,6 +187,9 @@ const Students = () => {
                       <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${student.studentType === 'center' ? 'bg-indigo-50 text-indigo-700' : 'bg-purple-50 text-purple-700'}`}>
                         {student.studentType === 'center' ? 'Center' : 'One-on-One'}
                       </span>
+                      {student.studentType === 'center' && (
+                        <div className="text-xs text-slate-500 mt-1">Class: {student.centerClass || DEFAULT_CENTER_CLASS}</div>
+                      )}
                     </td>
                     
                     {/* Academics */}

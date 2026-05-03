@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { addStudent } from '../services/studentService';
 import { Plus, Trash2, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
+const DEFAULT_CENTER_CLASS = 'Unassigned';
+
 const initialFormState = {
   firstName: '',
   lastName: '',
@@ -14,6 +16,7 @@ const initialFormState = {
   startDate: new Date().toISOString().split('T')[0],
   monthlyTuition: '',
   studentType: 'center',
+  centerClass: DEFAULT_CENTER_CLASS,
   notes: '',
 };
 
@@ -57,7 +60,11 @@ const AddStudent = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'studentType' && value === 'center' && !prev.centerClass ? { centerClass: DEFAULT_CENTER_CLASS } : {}),
+    }));
   };
 
   const handleArrayChange = (index, field, value) => {
@@ -92,6 +99,7 @@ const AddStudent = () => {
         parentEmails: formData.parentEmails.filter(Boolean),
         parentPhones: formData.parentPhones.filter(Boolean),
         monthlyTuition: Number(formData.monthlyTuition) || 0,
+        centerClass: formData.studentType === 'center' ? formData.centerClass || DEFAULT_CENTER_CLASS : undefined,
       };
 
       if (!processedData.firstName || !processedData.lastName) {
@@ -201,6 +209,16 @@ const AddStudent = () => {
               <label className="block text-sm font-medium text-slate-700">Monthly Tuition ($)</label>
               <input name="monthlyTuition" value={formData.monthlyTuition} onChange={handleChange} type="number" min="0" step="0.01" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" placeholder="0.00" />
             </div>
+            {formData.studentType === 'center' && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700">Center Class</label>
+                <select name="centerClass" value={formData.centerClass || DEFAULT_CENTER_CLASS} onChange={handleChange} className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all bg-white">
+                  <option value="Unassigned">Unassigned</option>
+                  <option value="Abir">Abir</option>
+                  <option value="Rahat">Rahat</option>
+                </select>
+              </div>
+            )}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700">Start Date</label>
               <input name="startDate" value={formData.startDate} onChange={handleChange} type="date" className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all" />

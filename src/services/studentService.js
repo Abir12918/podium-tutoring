@@ -18,11 +18,13 @@ const STUDENTS_COLLECTION = 'students';
  * @param {string} studentData.startDate
  * @param {number} studentData.monthlyTuition
  * @param {string} studentData.studentType - "center" or "one-on-one"
+ * @param {string} studentData.centerClass - "Abir", "Rahat", or "Unassigned"
  * @param {string} studentData.notes
  * @param {string} studentData.status - default "active"
  */
 export const addStudent = async (studentData) => {
   try {
+    const studentType = studentData.studentType || 'center';
     const student = {
       firstName: studentData.firstName || '',
       lastName: studentData.lastName || '',
@@ -34,7 +36,8 @@ export const addStudent = async (studentData) => {
       parentPhones: studentData.parentPhones || [],
       startDate: studentData.startDate || new Date().toISOString(),
       monthlyTuition: studentData.monthlyTuition || 0,
-      studentType: studentData.studentType || 'center',
+      studentType,
+      ...(studentType === 'center' ? { centerClass: studentData.centerClass || 'Unassigned' } : {}),
       notes: studentData.notes || '',
       status: studentData.status || 'active',
       createdAt: Timestamp.now(),

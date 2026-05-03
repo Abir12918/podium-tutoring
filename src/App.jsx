@@ -11,6 +11,7 @@ import StudentDetail from './pages/StudentDetail';
 import Attendance from './pages/Attendance';
 import Tuition from './pages/Tuition';
 import Goals from './pages/Goals';
+import Leads from './pages/Leads';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/tuition" element={<Tuition />} />
             <Route path="/goals" element={<Goals />} />
+            <Route path="/leads" element={<Leads />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getStudentById, updateStudent, deleteStudent } from '../services/studentService';
 import { ArrowLeft, Mail, Phone, BookOpen, Calendar, DollarSign, Loader2, User, Edit, Save, X, Trash2, Plus, CheckCircle, AlertCircle, Archive, RefreshCcw } from 'lucide-react';
 
+const DEFAULT_CENTER_CLASS = 'Unassigned';
+
 const ArrayInput = ({ label, field, type = "text", placeholder, formData, handleArrayChange, removeArrayItem, addArrayItem }) => (
   <div className="space-y-3">
     <label className="block text-sm font-semibold text-slate-700">{label}</label>
@@ -84,6 +86,7 @@ const StudentDetail = () => {
       parentEmails: student.parentEmails?.length ? student.parentEmails : [''],
       parentPhones: student.parentPhones?.length ? student.parentPhones : [''],
       startDate: student.startDate ? student.startDate.split('T')[0] : '',
+      centerClass: student.studentType === 'center' ? student.centerClass || DEFAULT_CENTER_CLASS : student.centerClass,
     });
     setStatus({ type: '', message: '' });
     setIsEditing(true);
@@ -96,7 +99,11 @@ const StudentDetail = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'studentType' && value === 'center' && !prev.centerClass ? { centerClass: DEFAULT_CENTER_CLASS } : {}),
+    }));
   };
 
   const handleArrayChange = (field, index, value) => {
@@ -127,6 +134,7 @@ const StudentDetail = () => {
         parentEmails: formData.parentEmails.filter(Boolean),
         parentPhones: formData.parentPhones.filter(Boolean),
         monthlyTuition: Number(formData.monthlyTuition) || 0,
+        centerClass: formData.studentType === 'center' ? formData.centerClass || DEFAULT_CENTER_CLASS : formData.centerClass,
       };
 
       if (!processedData.firstName || !processedData.lastName) {
@@ -346,6 +354,16 @@ const StudentDetail = () => {
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
+                {formData.studentType === 'center' && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-slate-700">Center Class</label>
+                    <select name="centerClass" value={formData.centerClass || DEFAULT_CENTER_CLASS} onChange={handleInputChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none bg-white">
+                      <option value="Unassigned">Unassigned</option>
+                      <option value="Abir">Abir</option>
+                      <option value="Rahat">Rahat</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -428,6 +446,12 @@ const StudentDetail = () => {
                     <p className="text-sm text-slate-500 font-medium">Grade</p>
                     <p className="text-slate-800 font-medium mt-0.5">{student.grade || 'Not specified'}</p>
                   </div>
+                  {student.studentType === 'center' && (
+                    <div>
+                      <p className="text-sm text-slate-500 font-medium">Center Class</p>
+                      <p className="text-slate-800 font-medium mt-0.5">{student.centerClass || DEFAULT_CENTER_CLASS}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-slate-500 font-medium">Subjects</p>
                     <div className="flex flex-wrap gap-2 mt-1.5">

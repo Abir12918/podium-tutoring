@@ -13,6 +13,7 @@ export interface Student {
   grade?: string;
   subjects?: string[];
   studentType: 'center' | 'online';
+  centerClass?: 'Abir' | 'Rahat' | 'Unassigned';
   tuitionRate: number;
   startDate: string;
   isActive: boolean;
@@ -61,6 +62,38 @@ export interface Goal {
   endDate: string;
   status: 'Not Started' | 'In Progress' | 'Done' | 'Blocked';
   notes: string;
+  createdAt?: any;
+  updatedAt?: any;
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface LeadActivity {
+  note: string;
+  createdAt?: any;
+  createdBy: string;
+}
+
+export interface Lead {
+  id?: string;
+  studentName: string;
+  grade: 'K' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12' | 'College' | 'Other' | '';
+  subjects: ('State Test Prep' | 'SHSAT' | 'Regents' | 'Common Core' | 'Other')[];
+  parentName: string;
+  parentPhone: string;
+  serviceInterests: ('Center' | 'One-on-One In-Person' | 'One-on-One Remote' | 'Remote Group' | 'SAT' | 'State Test Prep' | 'Regents' | 'Other')[];
+  serviceInterestOtherNotes: string;
+  leadSource: 'Referral' | 'Facebook' | 'Walk-In' | 'Friend/Family' | 'Other' | '';
+  leadSourceOtherNotes: string;
+  owner: 'Abir' | 'Rahat' | 'Both';
+  priority: 'Hot' | 'Warm' | 'Cold';
+  status: 'New' | 'Reached Out' | 'Follow-Up Needed' | 'Trial Scheduled' | 'Converted' | 'Closed' | 'Not Interested';
+  nextFollowUpDate: string;
+  lastContactedDate: string;
+  objection: 'Price too high' | 'Too many hours' | 'Not interested in remote' | 'Schedule conflict' | 'Needs to discuss with family' | 'Chose another tutor' | 'Not ready yet' | 'Other' | '';
+  objectionOtherNotes: string;
+  generalNotes: string;
+  activityLog: LeadActivity[];
   createdAt?: any;
   updatedAt?: any;
   createdBy: string;
