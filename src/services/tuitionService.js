@@ -1,4 +1,14 @@
-import { collection, doc, setDoc, getDocs, query, where, Timestamp } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  Timestamp,
+} from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { getStudents } from './studentService';
 
@@ -83,6 +93,76 @@ export const calculatePaymentStatus = (paidAmount, expectedAmount) => {
   return 'partial';
 };
 
+export const isRecordPaused = (record) => record?.isPaused === true;
+
+export const filterActiveTuitionRecords = (records) => (
+  Array.isArray(records) ? records.filter(record => !isRecordPaused(record)) : []
+);
+
+const getExistingPauseFields = async (docRef) => {
+  const existingSnapshot = await getDoc(docRef);
+
+  if (!existingSnapshot.exists()) {
+    return {
+      isPaused: false,
+    };
+  }
+
+  const existingRecord = existingSnapshot.data();
+
+  return {
+    isPaused: isRecordPaused(existingRecord),
+    pauseReason: existingRecord.pauseReason || '',
+    pauseNote: existingRecord.pauseNote || '',
+    pausedAt: existingRecord.pausedAt || null,
+    pausedBy: existingRecord.pausedBy || '',
+    resumedAt: existingRecord.resumedAt || null,
+    resumedBy: existingRecord.resumedBy || '',
+  };
+};
+
+export const pauseTuitionRecord = async (recordId, pauseData = {}) => {
+  try {
+    const docRef = doc(db, TUITION_COLLECTION, recordId);
+    const pausedAt = pauseData.pausedAt || Timestamp.now();
+    const pauseUpdate = {
+      isPaused: true,
+      pauseReason: pauseData.pauseReason || '',
+      pauseNote: pauseData.pauseNote || '',
+      pausedAt,
+      pausedBy: pauseData.pausedBy || '',
+      updatedAt: Timestamp.now(),
+    };
+
+    await updateDoc(docRef, pauseUpdate);
+
+    return { id: recordId, ...pauseUpdate };
+  } catch (error) {
+    console.error("Error pausing tuition record:", error);
+    throw error;
+  }
+};
+
+export const resumeTuitionRecord = async (recordId, resumeData = {}) => {
+  try {
+    const docRef = doc(db, TUITION_COLLECTION, recordId);
+    const resumedAt = resumeData.resumedAt || Timestamp.now();
+    const resumeUpdate = {
+      isPaused: false,
+      resumedAt,
+      resumedBy: resumeData.resumedBy || '',
+      updatedAt: Timestamp.now(),
+    };
+
+    await updateDoc(docRef, resumeUpdate);
+
+    return { id: recordId, ...resumeUpdate };
+  } catch (error) {
+    console.error("Error resuming tuition record:", error);
+    throw error;
+  }
+};
+
 /**
  * Retrieves all tuition records for a specific month.
  * @param {string} monthKey - YYYY-MM format
@@ -113,6 +193,7 @@ export const saveTuitionRecord = async (record) => {
   try {
     const docId = `${record.studentId}_${record.monthKey}`;
     const docRef = doc(db, TUITION_COLLECTION, docId);
+    const pauseFields = await getExistingPauseFields(docRef);
     const studentType = record.studentType || 'center';
     const tuitionType = record.tuitionType || (studentType === 'one-on-one' ? 'hourly' : 'monthly');
     const expectedAmount = Number(record.expectedAmount) || 0;
@@ -142,6 +223,7 @@ export const saveTuitionRecord = async (record) => {
       paymentDate: record.paymentDate || '',
       paymentMethod: record.paymentMethod || '',
       note: record.note || '',
+      ...pauseFields,
       updatedAt: Timestamp.now(),
     };
 
@@ -215,6 +297,7 @@ export const generateTuitionRecordsForMonth = async (monthKey, targetStudentType
           paymentDate: '',
           paymentMethod: '',
           note: '',
+          isPaused: false,
         };
         const saved = await saveTuitionRecord(newRecord);
         generatedRecords.push(saved);

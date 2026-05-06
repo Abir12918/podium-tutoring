@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, ClipboardList, Eye, Flame, Loader2, MessageSquarePlus, Plus, Save, Search, Target, TrendingUp, UserCheck, X } from 'lucide-react';
 import { addLead, addLeadActivity, getLeads, updateLead } from '../services/leadService';
 import {
@@ -306,6 +307,7 @@ const Leads = () => {
   const [activityNote, setActivityNote] = useState('');
   const [savingActivity, setSavingActivity] = useState(false);
   const [activityError, setActivityError] = useState('');
+  const isOverlayOpen = Boolean(selectedLead) || isAddModalOpen;
 
   const loadLeads = async () => {
     setLoading(true);
@@ -325,6 +327,19 @@ const Leads = () => {
   useEffect(() => {
     loadLeads();
   }, []);
+
+  useEffect(() => {
+    if (!isOverlayOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOverlayOpen]);
 
   const today = useMemo(() => getTodayDateOnly(), []);
 
@@ -752,7 +767,7 @@ const Leads = () => {
         </div>
       )}
 
-      {selectedLead && (
+      {selectedLead && createPortal(
         <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm">
           <button
             type="button"
@@ -1039,10 +1054,11 @@ const Leads = () => {
               </div>
             </form>
           </aside>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {isAddModalOpen && (
+      {isAddModalOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
           <div className="glass-card max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-4xl border border-white/70 shadow-podium-glass">
             <div className="relative flex items-center justify-between border-b border-brand-blue/10 bg-white/70 px-4 py-4 backdrop-blur sm:px-6">
@@ -1272,7 +1288,8 @@ const Leads = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

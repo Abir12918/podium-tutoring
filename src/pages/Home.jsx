@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { calculateExpectedTutorExpense, calculateProfit, getTuitionRecordsForMonth } from '../services/tuitionService';
+import { calculateExpectedTutorExpense, calculateProfit, getTuitionRecordsForMonth, isRecordPaused } from '../services/tuitionService';
 import { getStudents } from '../services/studentService';
-import { DollarSign, Users, ArrowRight, Loader2, CreditCard, Clock, UserPlus, CalendarCheck, GraduationCap, UserX } from 'lucide-react';
+import { getTasks } from '../services/taskService';
+import { getTaskReminderState } from '../utils/taskUtils';
+import { DollarSign, Users, ArrowRight, Loader2, CreditCard, Clock, UserPlus, CalendarCheck, GraduationCap, UserX, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
   const { currentUser } = useAuth();
   const [records, setRecords] = useState([]);
   const [students, setStudents] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const currentDate = new Date();
@@ -18,12 +21,14 @@ const Home = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [tuitionData, studentData] = await Promise.all([
+        const [tuitionData, studentData, taskData] = await Promise.all([
           getTuitionRecordsForMonth(monthKey),
-          getStudents()
+          getStudents(),
+          getTasks()
         ]);
         setRecords(tuitionData);
         setStudents(studentData);
+        setTasks(taskData);
       } catch (err) {
         console.error("Failed to load summary data", err);
       } finally {
@@ -34,10 +39,11 @@ const Home = () => {
   }, [monthKey]);
 
   // Calculations
-  const expectedTotal = records.reduce((sum, r) => sum + (Number(r.expectedAmount) || 0), 0);
-  const collectedTotal = records.reduce((sum, r) => sum + (Number(r.paidAmount) || 0), 0);
+  const activeTuitionRecords = records.filter(record => !isRecordPaused(record));
+  const expectedTotal = activeTuitionRecords.reduce((sum, r) => sum + (Number(r.expectedAmount) || 0), 0);
+  const collectedTotal = activeTuitionRecords.reduce((sum, r) => sum + (Number(r.paidAmount) || 0), 0);
   const remainingTotal = expectedTotal - collectedTotal;
-  const oneOnOneExpectedProfit = records
+  const oneOnOneExpectedProfit = activeTuitionRecords
     .filter((record) => record.studentType === 'one-on-one')
     .reduce((sum, record) => {
       const expectedTutorExpense = record.expectedTutorExpense ?? calculateExpectedTutorExpense(record.expectedTutoringHours, record.tutorHourlyPay);
@@ -53,6 +59,39 @@ const Home = () => {
   const centerCount = activeStudents.filter(s => s.studentType === 'center').length;
   const oneOnOneCount = activeStudents.filter(s => s.studentType === 'one-on-one').length;
   const inactiveCount = students.filter(s => s.status === 'inactive').length;
+  const taskReminderCounts = tasks.reduce(
+    (counts, task) => {
+      if (task.status === 'Done') {
+        return counts;
+      }
+
+      try {
+        const reminderState = getTaskReminderState(task);
+
+        if (reminderState === 'overdue') {
+          counts.overdue += 1;
+        }
+
+        if (reminderState === 'dueToday') {
+          counts.dueToday += 1;
+        }
+
+        if (reminderState === 'dueThisWeek') {
+          counts.dueThisWeek += 1;
+        }
+      } catch (err) {
+        console.error("Failed to calculate task reminder state", err);
+      }
+
+      return counts;
+    },
+    {
+      overdue: 0,
+      dueToday: 0,
+      dueThisWeek: 0,
+    }
+  );
+  const hasUrgentTasks = taskReminderCounts.overdue > 0 || taskReminderCounts.dueToday > 0 || taskReminderCounts.dueThisWeek > 0;
 
   return (
     <div className="space-y-8 pb-12">
@@ -90,6 +129,66 @@ const Home = () => {
         </div>
       ) : (
         <div className="space-y-8">
+          {/* Task Reminders */}
+          <div className="glass-card rounded-4xl border border-white/70 p-5 shadow-podium-glass md:p-6">
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-blue/65">Reminders</p>
+                <h2 className="mt-1 text-2xl font-black tracking-tight text-brand-ink">Task Reminders</h2>
+              </div>
+              <Link to="/tasks" className="btn-ghost group min-h-0 w-fit px-3 py-2">
+                View Tasks <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+
+            {hasUrgentTasks ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="rounded-3xl border border-brand-red/20 bg-brand-red/10 p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold text-brand-red">Overdue</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-brand-red">{taskReminderCounts.overdue}</p>
+                    </div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/65 text-brand-red ring-1 ring-brand-red/10">
+                      <AlertCircle size={20} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-brand-yellow/35 bg-brand-yellow/20 p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold text-[#765300]">Due Today</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-[#765300]">{taskReminderCounts.dueToday}</p>
+                    </div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/65 text-[#765300] ring-1 ring-brand-yellow/20">
+                      <CalendarCheck size={20} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-brand-blue/20 bg-brand-blue/10 p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold text-brand-blue">Due This Week</p>
+                      <p className="mt-2 text-3xl font-black tracking-tight text-brand-blue">{taskReminderCounts.dueThisWeek}</p>
+                    </div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/65 text-brand-blue ring-1 ring-brand-blue/10">
+                      <Clock size={20} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 rounded-3xl border border-brand-green/15 bg-brand-green/10 p-4 text-brand-green shadow-sm">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/70 ring-1 ring-brand-green/10">
+                  <CheckCircle2 size={20} />
+                </div>
+                <p className="font-bold">No urgent tasks.</p>
+              </div>
+            )}
+          </div>
+
           {/* Student Stats */}
           <div>
             <div className="mb-4 flex items-center justify-between">

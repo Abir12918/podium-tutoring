@@ -60,6 +60,13 @@ export interface TuitionRecord {
   paymentDate?: string; // YYYY-MM-DD
   paymentMethod?: 'cash' | 'zelle' | 'check' | 'card' | 'other' | '';
   note?: string;
+  isPaused?: boolean;
+  pauseReason?: string;
+  pauseNote?: string;
+  pausedAt?: any;
+  pausedBy?: string;
+  resumedAt?: any;
+  resumedBy?: string;
   monthKey: string; // YYYY-MM
   updatedAt?: any;
 }
@@ -80,6 +87,23 @@ export interface Goal {
   updatedAt?: any;
   createdBy: string;
   updatedBy: string;
+}
+
+export interface Task {
+  id?: string;
+  title: string;
+  description: string;
+  owner: 'Abir' | 'Rahat' | 'Both';
+  priority: 'High' | 'Medium' | 'Low';
+  status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
+  dueDate: string;
+  monthKey: string; // YYYY-MM
+  notes: string;
+  createdBy: string;
+  updatedBy: string;
+  createdAt?: any;
+  updatedAt?: any;
+  completedAt?: any | null;
 }
 
 export interface LeadActivity {

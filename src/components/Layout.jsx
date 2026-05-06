@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, UserPlus, Users, CalendarCheck, LogOut, CreditCard, Target, ClipboardList } from 'lucide-react';
+import { Home, UserPlus, Users, CalendarCheck, LogOut, CreditCard, Target, ClipboardList, ClipboardCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { logoutUser } from '../firebase/firebaseConfig';
 
@@ -74,6 +74,7 @@ const Layout = () => {
             <SidebarLink to="/tuition" icon={CreditCard}>Tuition</SidebarLink>
             <SidebarLink to="/goals" icon={Target}>Goals</SidebarLink>
             <SidebarLink to="/leads" icon={ClipboardList}>Leads</SidebarLink>
+            <SidebarLink to="/tasks" icon={ClipboardCheck}>Tasks</SidebarLink>
           </nav>
 
           <div className="m-4 rounded-3xl border border-brand-blue/10 bg-white/55 p-3 shadow-sm">

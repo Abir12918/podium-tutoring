@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, CalendarDays, CheckCircle2, Clock, Edit3, Flag, Loader2, Plus, Save, Target, TrendingUp, UserRound, X } from 'lucide-react';
 import { addGoal, getGoalsByQuarter, updateGoal } from '../services/goalService';
 import { calculateGoalSummary, getCurrentQuarter, getQuarterFromDate, getTimeRemaining } from '../utils/goalUtils';
@@ -198,6 +199,7 @@ const Goals = () => {
   }, [formData.year, selectedYear]);
 
   const summary = useMemo(() => calculateGoalSummary(goals), [goals]);
+  const isModalOpen = Boolean(modalMode);
 
   const loadGoals = async (year = selectedYear, quarter = selectedQuarter) => {
     setLoading(true);
@@ -226,6 +228,19 @@ const Goals = () => {
 
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isModalOpen]);
 
   const showSuccess = (message) => {
     setSuccessMessage(message);
@@ -576,8 +591,8 @@ const Goals = () => {
         </section>
       )}
 
-      {modalMode && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-3 backdrop-blur-sm sm:items-center sm:p-4">
+      {isModalOpen && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 p-3 backdrop-blur-sm sm:p-4">
           <div className="glass-card max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-4xl border border-white/70 shadow-podium-glass">
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-brand-blue/10 bg-white/80 p-5 backdrop-blur">
               <div>
@@ -749,7 +764,8 @@ const Goals = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

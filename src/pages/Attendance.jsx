@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { getCenterStudents } from '../services/studentService';
 import { getAttendanceForMonth, saveAttendanceRecord } from '../services/attendanceService';
 import { getWeekendDatesForMonth, isFutureDate } from '../utils/dateUtils';
@@ -26,6 +27,19 @@ const Attendance = () => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [monthKey]);
+
+  useEffect(() => {
+    if (!noteModal.isOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [noteModal.isOpen]);
 
   const loadData = async () => {
     setLoading(true);
@@ -353,7 +367,7 @@ const Attendance = () => {
       )}
 
       {/* Note Modal */}
-      {noteModal.isOpen && (
+      {noteModal.isOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="glass-card w-full max-w-md overflow-hidden rounded-4xl border border-white/70 shadow-podium-glass">
             <div className="flex items-start justify-between gap-4 border-b border-brand-blue/10 bg-white/55 p-6">
@@ -400,7 +414,8 @@ const Attendance = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
