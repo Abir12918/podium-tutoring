@@ -42,6 +42,21 @@ const getStatusLabel = (status) => {
   return 'Unpaid';
 };
 
+const clampPaidAmount = (paidAmount, expectedAmount) => {
+  const paidValue = Number(paidAmount);
+  const expectedValue = Number(expectedAmount);
+
+  if (!Number.isFinite(paidValue)) {
+    return paidAmount;
+  }
+
+  if (!Number.isFinite(expectedValue)) {
+    return Math.max(paidValue, 0);
+  }
+
+  return Math.min(Math.max(paidValue, 0), Math.max(expectedValue, 0));
+};
+
 const formatCompactNumber = (value) => {
   const amount = Number(value);
 
@@ -430,6 +445,25 @@ const Tuition = () => {
     }
 
     newRecords[recordIndex] = { ...newRecords[recordIndex], [field]: value };
+
+    if (newRecords[recordIndex].studentType === 'center') {
+      if (field === 'paidAmount') {
+        newRecords[recordIndex].paidAmount = clampPaidAmount(value, newRecords[recordIndex].expectedAmount);
+      }
+
+      if (field === 'paymentStatus') {
+        if (value === 'paid') {
+          newRecords[recordIndex].paidAmount = Number(newRecords[recordIndex].expectedAmount) || 0;
+        } else if (value === 'unpaid') {
+          newRecords[recordIndex].paidAmount = 0;
+        } else {
+          newRecords[recordIndex].paidAmount = clampPaidAmount(
+            newRecords[recordIndex].paidAmount,
+            newRecords[recordIndex].expectedAmount
+          );
+        }
+      }
+    }
     
     // Auto-update status based on paid amount
     if (field === 'paidAmount') {
@@ -859,8 +893,8 @@ const Tuition = () => {
                   <th className="sticky left-0 z-20 bg-[#fbfcff] px-6 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500 shadow-[1px_0_0_0_rgba(7,49,149,0.08)]">Student</th>
                   <th className="px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500">Type</th>
                   <th className="w-28 px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500">Expected</th>
-                  <th className="w-36 px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500">Paid</th>
                   <th className="w-40 px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500">Status</th>
+                  <th className="w-36 px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500">Paid</th>
                   <th className="w-44 px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500">Payment Date</th>
                   <th className="w-40 px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500">Method</th>
                   <th className="min-w-[220px] px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-slate-500">Note</th>
@@ -901,20 +935,6 @@ const Tuition = () => {
                         </div>
                       </td>
                       <td className="px-5 py-4">
-                        <div className="relative flex items-center">
-                          <span className="pointer-events-none absolute left-3 text-sm font-semibold text-slate-400">$</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={record.paidAmount}
-                            onChange={(e) => handleRecordChange(record.id, 'paidAmount', e.target.value)}
-                            onBlur={() => handleRecordBlur(record.id)}
-                            className="w-full rounded-2xl border border-brand-blue/10 bg-white/80 py-2.5 pl-7 pr-3 text-sm font-semibold text-slate-800 shadow-sm outline-none transition-all focus:border-brand-blue/50 focus:bg-white focus:ring-4 focus:ring-brand-blue/10"
-                          />
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
                         <select
                           value={record.paymentStatus}
                           onChange={(e) => handleRecordChange(record.id, 'paymentStatus', e.target.value)}
@@ -925,6 +945,21 @@ const Tuition = () => {
                           <option value="partial">Partial</option>
                           <option value="paid">Paid</option>
                         </select>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="relative flex items-center">
+                          <span className="pointer-events-none absolute left-3 text-sm font-semibold text-slate-400">$</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max={Number(record.expectedAmount) || 0}
+                            step="0.01"
+                            value={record.paidAmount}
+                            onChange={(e) => handleRecordChange(record.id, 'paidAmount', e.target.value)}
+                            onBlur={() => handleRecordBlur(record.id)}
+                            className="w-full rounded-2xl border border-brand-blue/10 bg-white/80 py-2.5 pl-7 pr-3 text-sm font-semibold text-slate-800 shadow-sm outline-none transition-all focus:border-brand-blue/50 focus:bg-white focus:ring-4 focus:ring-brand-blue/10"
+                          />
+                        </div>
                       </td>
                       <td className="px-5 py-4">
                         <input

@@ -71,6 +71,21 @@ export interface TuitionRecord {
   updatedAt?: any;
 }
 
+export interface MonthlyExpense {
+  id?: string;
+  monthKey: string; // YYYY-MM
+  category: string;
+  amount: number;
+  note?: string;
+  isDefault?: boolean;
+  defaultKey?: string;
+  isDeleted?: boolean;
+  createdBy: string;
+  updatedBy: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
 export interface Goal {
   id?: string;
   goalDescription: string;

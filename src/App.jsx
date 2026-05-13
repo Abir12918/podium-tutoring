@@ -9,6 +9,7 @@ import Students from './pages/Students';
 import StudentDetail from './pages/StudentDetail';
 import Attendance from './pages/Attendance';
 import Tuition from './pages/Tuition';
+import Earnings from './pages/Earnings';
 import Goals from './pages/Goals';
 import Leads from './pages/Leads';
 import Tasks from './pages/Tasks';
@@ -27,6 +28,7 @@ function App() {
             <Route path="/students/:studentId" element={<StudentDetail />} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/tuition" element={<Tuition />} />
+            <Route path="/earnings" element={<Earnings />} />
             <Route path="/goals" element={<Goals />} />
             <Route path="/leads" element={<Leads />} />
             <Route path="/tasks" element={<Tasks />} />
